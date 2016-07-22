@@ -1,7 +1,7 @@
 BKZ 2.0 Strategy Search
 =======================
 
-Search for BKZ 2.0 lattice-reduction strategies using `fplll <https://github.com/fplll/fplll>`_. and `fplll <https://github.com/fpylll/fpylll>`_
+Search for BKZ 2.0 lattice-reduction strategies using `fplll <https://github.com/fplll/fplll>`_ and `fplll <https://github.com/fpylll/fpylll>`_.
 
 Getting Started
 ---------------
@@ -32,7 +32,7 @@ To run the strategy search, first check the help
 
      $ (strategizer) python ./strategy.py --help
 
-and then run
+and then run e.g.
 
    .. code-block:: bash
 
