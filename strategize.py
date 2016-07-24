@@ -25,6 +25,23 @@ from strategizer.strategizers import PruningStrategizer, OnePreprocStrategizerFa
 logger = logging.getLogger(__name__)
 
 
+def find_best(state, fudge=1.01):
+    """
+    Given an ordered tuple of tuples, return the minimal one, where
+    minimal is determined by first entry.
+
+    :param state:
+    :param fudge:
+
+
+    .. note :: The fudge factor means that we have a bias towards earlier entries.
+    """
+    best = state[0]
+    for s in state:
+        if best[0] > fudge*s[0]:
+            best = s
+    return best
+
 
 def worker_process(A, params, queue):
     """
@@ -189,7 +206,7 @@ def strategize(max_block_size,
         state = []
 
         try:
-            p = strategies[-1].preprocessing_block_sizes[0]
+            p = max(strategies[-1].preprocessing_block_sizes[0]-4,0)
         except (IndexError,):
             p = 0
 
@@ -219,7 +236,7 @@ def strategize(max_block_size,
             if not prev_best_total_time or prev_best_total_time > total_time:
                 prev_best_total_time = total_time
 
-        best = sorted(state)[0]
+        best = find_best(state)
         total_time, strategy, stats, strategizer, queries = best
 
         strategies.append(strategy)
