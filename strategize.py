@@ -20,19 +20,10 @@ from fpylll.fplll.bkz_param import Strategy, dump_strategies_json
 from strategizer.bkz import CallbackBKZ
 from strategizer.bkz import CallbackBKZParam as Param
 from strategizer.config import logging, git_revision
+from strategizer.util import chunk_iterator
 from strategizer.strategizers import PruningStrategizer, OnePreprocStrategizerFactory
 logger = logging.getLogger(__name__)
 
-
-def chunk_iterator(lst, step):
-    """Return up to ``step`` entries from ``lst`` each time this function is called.
-
-    :param lst: a list
-    :param step: number of elements to return
-
-    """
-    for i in xrange(0, len(lst), step):
-        yield tuple(lst[j] for j in range(i, min(i+step, len(lst))))
 
 
 def worker_process(A, params, queue):
