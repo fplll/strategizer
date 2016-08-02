@@ -30,13 +30,19 @@ To run the strategy search, first check the help
 
    .. code-block:: bash
 
-     $ (strategizer) python ./strategy.py --help
+     $ (strategizer) python ./strategize.py --help
 
 and then run e.g.
 
    .. code-block:: bash
 
-     $ (strategizer) python ./strategy.py --max-block-size 40 --threads 2 --samples 128
+     $ (strategizer) python ./strategize.py --max-block-size 40 --threads 2 --samples 128
+
+To compare two different strategies, try:
+
+   .. code-block:: bash
+
+     $ (strategizer) python ./compare.py A.json B.json
 
      
 Attribution & License
