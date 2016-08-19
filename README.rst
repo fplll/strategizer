@@ -6,6 +6,14 @@ Search for BKZ 2.0 lattice-reduction strategies using `fplll <https://github.com
 Getting Started
 ---------------
 
+The strategizer uses git `submodules <https://git-scm.com/docs/git-submodule>`_ to fix specific revisions of fplll and fpylll to use. Hence, make sure to clone this repository recursively by calling
+
+   .. code-block:: bash
+
+     $ git clone --recursive git@github.com:fplll/strategizer.git
+
+If you have previously cloned without the `--recursive` switch, run `git submodule init` and `git submodule update`.
+
 We assume you are using a `virtualenv <https://virtualenv.readthedocs.org/>`_ for isolating Python build environments. Then, to install ``fplll`` and ``fpylll`` run
  
    .. code-block:: bash
