@@ -206,7 +206,7 @@ def strategize(max_block_size,
         state = []
 
         try:
-            p = max(strategies[-1].preprocessing_block_sizes[0]-4,0)
+            p = max(strategies[-1].preprocessing_block_sizes[0] - 8,0)
         except (IndexError,):
             p = 0
 
@@ -230,9 +230,9 @@ def strategize(max_block_size,
             state.append((total_time, strategy, stats, strategizer, queries))
             logger.info("%10.6fs, %10.6fs, %10.6fs, %s", total_time, preproc_time, svp_time, strategy)
 
-            if prev_best_total_time and 1.2*prev_best_total_time < total_time:
+            if prev_best_total_time and 1.5*prev_best_total_time < total_time:
                 break
-            p += 4
+            p += 2
             if not prev_best_total_time or prev_best_total_time > total_time:
                 prev_best_total_time = total_time
 
