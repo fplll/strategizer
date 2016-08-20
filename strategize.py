@@ -272,7 +272,7 @@ if __name__ == '__main__':
     if args.filename:
         if not args.filename.endswith(".json"):
             raise ValueError("filename should be a json file")
-        log_name = args.filename.subs(".json", ".log")
+        log_name = args.filename.replace(".json", ".log")
 
     extra = logging.FileHandler(log_name)
     extra.setLevel(logging.DEBUG)
