@@ -7,6 +7,7 @@ Compare strategies
 from __future__ import absolute_import
 from collections import OrderedDict
 from fpylll import BKZ, IntegerMatrix
+from fpylll.fplll.bkz_param import Strategy, dump_strategies_json
 from fpylll.algorithms.bkz_stats import BKZStats
 from multiprocessing import Queue, Process
 from strategizer.bkz import CallbackBKZ
@@ -147,10 +148,16 @@ if __name__ == '__main__':
     results = compare_strategies(strategiess, nthreads=args.threads, nsamples=args.samples,
                                  min_block_size=args.min_block_size, max_block_size=args.max_block_size)
     json_dict = OrderedDict()
+
+    best = [Strategy(bs) for bs in range(args.max_block_size+1)]
+
     for result in results:
         if not result:
             continue
         json_dict[result[0]["strategy"].block_size] = []
+
+        min_t = None
+
         for entry in result:
             d = OrderedDict()
             d["name"] = str(entry["strategy"])
@@ -158,5 +165,10 @@ if __name__ == '__main__':
             d["length"] = entry["length"]
             json_dict[result[0]["strategy"].block_size].append(d)
 
+            if min_t is None or min_t > entry["total time"]:
+                best[result[0]["strategy"].block_size] = entry["strategy"]
+
     json_name = "compare-%s.json"%(name)
     json.dump(json_dict, open(json_name, "w"), indent=4, sort_keys=False)
+    best_name = "compare-best-%s.json"%(name)
+    dump_strategies_json(best_name, best)
