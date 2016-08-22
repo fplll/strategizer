@@ -167,6 +167,7 @@ if __name__ == '__main__':
 
             if min_t is None or min_t > entry["total time"]:
                 best[result[0]["strategy"].block_size] = entry["strategy"]
+                min_t = entry["total time"]
 
     json_name = "compare-%s.json"%(name)
     json.dump(json_dict, open(json_name, "w"), indent=4, sort_keys=False)
