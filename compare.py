@@ -113,8 +113,8 @@ def compare_strategies(strategies_list, nthreads=1, nsamples=50,
 
             results[block_size].append(result)
 
-            if t > 1.0 and nsamples > 2*max(32, nthreads):
-                nsamples /= 2
+        if results[block_size][0]["total time"] > 1.0 and nsamples > 2*max(32, nthreads):
+            nsamples /= 2
 
     return results
 
