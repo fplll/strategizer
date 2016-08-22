@@ -128,7 +128,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--threads', help='number of threads to use', type=int, default=1)
     parser.add_argument('-s', '--samples', help='number of samples to try', type=int, default=10)
     parser.add_argument('-l', '--min-block-size', help='minimal block size to consider', type=int, default=3)
-    parser.add_argument('-u', '--max-block-size', help='minimal block size to consider', type=int, default=None)
+    parser.add_argument('-u', '--max-block-size', help='maximal block size to consider', type=int, default=None)
     parser.add_argument('strategies', help='jsons file to load strategies from', type=str, nargs='*')
 
     args = parser.parse_args()
