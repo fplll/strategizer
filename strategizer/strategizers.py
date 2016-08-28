@@ -21,7 +21,7 @@ class EmptyStrategizer(object):
     pruner_method = "hybrid"
     pruner_precision = 53
 
-    def __init__(self, block_size, pruner_method = "hybrid", pruner_precision = 53):
+    def __init__(self, block_size, pruner_method="hybrid", pruner_precision=53):
         """
 
         :param block_size: block size to consider
@@ -120,7 +120,7 @@ class OnePreprocStrategizerTemplate(EmptyStrategizer):
 
     def preproc(self, inp):
         """
-        Preprocess with one tour of 8,16,24,…,block_size-20-1
+        Preprocess with one tour of self.preprocessing_block_size
         """
         return [self.preprocessing_block_size]
 
@@ -134,6 +134,43 @@ def OnePreprocStrategizerFactory(block_size):
                 (OnePreprocStrategizerTemplate,),
                 {"name": name, "preprocessing_block_size": block_size,
                  "min_block_size": block_size+1})
+
+
+progressiveStep = 10
+progressiveMin = 23
+
+class ProgressivePreprocStrategizerTemplate(EmptyStrategizer):
+    """
+    """
+
+    name = "ProgressivePreprocStrategy-block_size"
+
+    def preproc(self, inp):
+        """
+        Preprocess with one tour of b for increasing  b <= self.preprocessing_block_size
+        """
+        L = [self.preprocessing_block_size]
+        x = self.preprocessing_block_size - progressiveStep
+        step = progressiveStep
+        while x > progressiveMin:
+            L = [x] + L
+            x -= step
+            step -= 1
+            step = max(step, 2)
+        return L
+
+
+def ProgressivePreprocStrategizerFactory(block_size):
+    """
+    Create ``ProgressivePreprocStrategizer`` for for ``block_size``
+    """
+    name = "ProgressivePreprocStrategy-%d"%(block_size)
+    return type("ProgressivePreprocStrategizer",
+                (ProgressivePreprocStrategizerTemplate,),
+                {"name": name, "preprocessing_block_size": block_size,
+                 "min_block_size": block_size+1})
+
+
 
 
 class PruningStrategizer(EmptyStrategizer):
@@ -168,7 +205,7 @@ class PruningStrategizer(EmptyStrategizer):
         for i in range(-PruningStrategizer.GH_FACTORS_STEPS, PruningStrategizer.GH_FACTORS_STEPS+1):
             radius = gh_margin(block_size) ** (1. * i / PruningStrategizer.GH_FACTORS_STEPS)
             pruning_ = prune(radius, overhead, min(1.001*probability, 0.999), R,
-                descent_method = self.pruner_method, precision = self.pruner_precision)
+                descent_method=self.pruner_method, precision=self.pruner_precision)
             pruning.append(pruning_)
         return tuple(pruning)
 
