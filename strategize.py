@@ -93,6 +93,8 @@ def callback_roundtrip(alive, k, connections, data):
 
 
 def discover_strategy(block_size, Strategizer, strategies,
+                      pruner_method = "hybrid",
+                      pruner_precision = 53,
                       nthreads=1, nsamples=50):
     """Discover a strategy using ``Strategizer``
 
@@ -109,7 +111,9 @@ def discover_strategy(block_size, Strategizer, strategies,
     k = nthreads
     m = nsamples
 
-    strategizer = Strategizer(block_size)
+    strategizer = Strategizer(block_size, 
+        pruner_method = pruner_method, pruner_precision = pruner_precision
+)
 
     # everybody is alive in the beginning
     alive = range(m)
@@ -156,7 +160,8 @@ def discover_strategy(block_size, Strategizer, strategies,
 
     strategy = Strategy(block_size=block_size,
                         preprocessing_block_sizes=preproc_params,
-                        pruning_parameters=pruning_params)
+                        pruning_parameters=pruning_params
+                        )
 
     active_children()
 
@@ -171,6 +176,8 @@ def strategize(max_block_size,
                existing_strategies=None,
                min_block_size=3,
                nthreads=1, nsamples=50,
+               pruner_method = "hybrid",
+               pruner_precision = 53,
                dump_filename=None):
     """
     *one* preprocessing block size + pruning.
@@ -222,7 +229,10 @@ def strategize(max_block_size,
                                                          strategizer_p,
                                                          strategies,
                                                          nthreads=nthreads,
-                                                         nsamples=nsamples)
+                                                         nsamples=nsamples,
+                                                         pruner_method = pruner_method,
+                                                         pruner_precision = pruner_precision
+                                                         )
 
             total_time = sum([stat.total_time for stat in stats])/nsamples
             svp_time = sum([stat.svp_time for stat in stats])/nsamples
@@ -264,6 +274,9 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--min-block-size', help='minimal block size to consider', type=int, default=3)
     parser.add_argument('-u', '--max-block-size', help='minimal block size to consider', type=int, default=50)
     parser.add_argument('-f', '--filename', help='json file to store strategies to', type=str, default=None)
+    parser.add_argument('-m', '--method', help='descent method for the pruner {gradient,nm,hybrid} (default is hybrid) ', type=str, default="hybrid")
+    parser.add_argument('-p', '--prec', help='descent method for the pruner {gradient,nm,hybrid} (default is hybrid) ', type=int, default=53)
+
 
     args = parser.parse_args()
 
@@ -283,4 +296,6 @@ if __name__ == '__main__':
     strategize(nthreads=args.threads, nsamples=args.samples,
                min_block_size=args.min_block_size,
                max_block_size=args.max_block_size,
+               pruner_method = args.method,
+               pruner_precision = args.prec,
                dump_filename=args.filename)
