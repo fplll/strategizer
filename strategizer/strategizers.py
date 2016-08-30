@@ -112,7 +112,7 @@ def SimplePreprocStrategizerFactory(start, stop, step_size):
 SimplePreprocStrategizer16248 = SimplePreprocStrategizerFactory(16, 24, 8)
 
 
-class OnePreprocStrategizerTemplate(EmptyStrategizer):
+class OneTourPreprocStrategizerTemplate(EmptyStrategizer):
     """
     """
 
@@ -125,19 +125,19 @@ class OnePreprocStrategizerTemplate(EmptyStrategizer):
         return [self.preprocessing_block_size]
 
 
-def OnePreprocStrategizerFactory(block_size):
+def OneTourPreprocStrategizerFactory(block_size):
     """
-    Create ``OnePreprocStrategizer`` for for ``block_size``
+    Create ``OneTourPreprocStrategizer`` for for ``block_size``
     """
     name = "OnePreprocStrategy-%d"%(block_size)
-    return type("OnePreprocStrategizer",
-                (OnePreprocStrategizerTemplate,),
+    return type("OneTourPreprocStrategizer",
+                (OneTourPreprocStrategizerTemplate,),
                 {"name": name, "preprocessing_block_size": block_size,
                  "min_block_size": block_size+1})
 
 
 progressiveStep = 10
-progressiveMin = 23
+progressiveMin = 22
 
 class ProgressivePreprocStrategizerTemplate(EmptyStrategizer):
     """
@@ -154,9 +154,9 @@ class ProgressivePreprocStrategizerTemplate(EmptyStrategizer):
         step = progressiveStep
         while x > progressiveMin:
             L = [x] + L
+            step -= 2
             x -= step
-            step -= 1
-            step = max(step, 2)
+            step = max(step, 4)
         return L
 
 

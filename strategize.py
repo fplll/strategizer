@@ -21,7 +21,7 @@ from strategizer.bkz import CallbackBKZ
 from strategizer.bkz import CallbackBKZParam as Param
 from strategizer.config import logging, git_revision
 from strategizer.util import chunk_iterator
-from strategizer.strategizers import PruningStrategizer, OnePreprocStrategizerFactory, ProgressivePreprocStrategizerFactory
+from strategizer.strategizers import PruningStrategizer, OneTourPreprocStrategizerFactory, ProgressivePreprocStrategizerFactory
 logger = logging.getLogger(__name__)
 
 
@@ -177,6 +177,7 @@ def strategize(max_block_size,
                nthreads=1, nsamples=50,
                pruner_method = "hybrid",
                pruner_precision = 53,
+               StrategizerFactory = ProgressivePreprocStrategizerFactory,
                dump_filename=None):
     """
     *one* preprocessing block size + pruning.
@@ -220,7 +221,7 @@ def strategize(max_block_size,
         while p < block_size:
             if p >= 4:
                 strategizer_p = type("PreprocStrategizer-%d"%p,
-                                     (strategizer, ProgressivePreprocStrategizerFactory(p)), {})
+                                     (strategizer, StrategizerFactory(p)), {})
             else:
                 strategizer_p = strategizer
 
@@ -262,6 +263,13 @@ def strategize(max_block_size,
     return strategies, times
 
 
+StrategizerFactoryDictionnary = {
+    "ProgressivePreproc" : ProgressivePreprocStrategizerFactory,
+    "OneTourPreproc" : OneTourPreprocStrategizerFactory
+    }
+
+
+
 if __name__ == '__main__':
     import argparse
     import logging
@@ -274,7 +282,8 @@ if __name__ == '__main__':
     parser.add_argument('-u', '--max-block-size', help='minimal block size to consider', type=int, default=50)
     parser.add_argument('-f', '--filename', help='json file to store strategies to', type=str, default=None)
     parser.add_argument('-m', '--method', help='descent method for the pruner {gradient,nm,hybrid} (default is hybrid) ', type=str, default="hybrid")
-    parser.add_argument('-p', '--prec', help='descent method for the pruner {gradient,nm,hybrid} (default is hybrid) ', type=int, default=53)
+    parser.add_argument('-p', '--prec', help='floating point precision in the pruner (default is 53 (double float)) ', type=int, default=53)
+    parser.add_argument('-S', '--strategizer', help='Strategizer : {OneTourPreproc,ProgressivePreproc} (default is ProgressivePreproc) ', type=str, default="ProgressivePreproc")
 
 
     args = parser.parse_args()
@@ -297,4 +306,5 @@ if __name__ == '__main__':
                max_block_size=args.max_block_size,
                pruner_method=args.method,
                pruner_precision=args.prec,
+               StrategizerFactory = StrategizerFactoryDictionnary[args.strategizer],
                dump_filename=args.filename)
