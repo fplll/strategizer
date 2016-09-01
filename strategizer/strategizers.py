@@ -134,8 +134,8 @@ def OneTourPreprocStrategizerFactory(block_size):
                  "min_block_size": block_size+1})
 
 
-progressiveStep = 10
-progressiveMin = 22
+PROGRESSIVE_STEP = 10
+PROGRESSIVE_MIN = 22
 
 
 class ProgressivePreprocStrategizerTemplate(EmptyStrategizer):
@@ -149,8 +149,8 @@ class ProgressivePreprocStrategizerTemplate(EmptyStrategizer):
         Preprocess with one tour of b for increasing  b <= self.preprocessing_block_size
         """
         L = [self.preprocessing_block_size]
-        x = self.preprocessing_block_size - progressiveStep
-        step = progressiveStep
+        x = self.preprocessing_block_size - PROGRESSIVE_STEP
+        step = PROGRESSIVE_STEP
         while x > progressiveMin:
             L = [x] + L
             step -= 2
