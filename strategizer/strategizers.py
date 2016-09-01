@@ -3,7 +3,6 @@
 Strategizers are used to find strategies for BKZ reduction.
 """
 
-from fpylll import BKZ
 from .bkz import CallbackStrategy
 from .mdc import nodes_per_sec
 from .volumes import gaussian_heuristic, gh_margin
@@ -30,8 +29,7 @@ class EmptyStrategizer(object):
         self.block_size = block_size
         self.queries = []
         self.pruner_method = pruner_method
-        self.pruner_precision = pruner_precision 
-
+        self.pruner_precision = pruner_precision
 
     def what(self, queries):
         """
@@ -139,6 +137,7 @@ def OneTourPreprocStrategizerFactory(block_size):
 progressiveStep = 10
 progressiveMin = 22
 
+
 class ProgressivePreprocStrategizerTemplate(EmptyStrategizer):
     """
     """
@@ -169,8 +168,6 @@ def ProgressivePreprocStrategizerFactory(block_size):
                 (ProgressivePreprocStrategizerTemplate,),
                 {"name": name, "preprocessing_block_size": block_size,
                  "min_block_size": block_size+1})
-
-
 
 
 class PruningStrategizer(EmptyStrategizer):
@@ -204,7 +201,8 @@ class PruningStrategizer(EmptyStrategizer):
 
         for i in range(-PruningStrategizer.GH_FACTORS_STEPS, PruningStrategizer.GH_FACTORS_STEPS+1):
             radius = gh_margin(block_size) ** (1. * i / PruningStrategizer.GH_FACTORS_STEPS)
-            pruning_ = prune(radius, overhead, min(1.001*probability, 0.999), R,
+            pruning_ = prune(
+                radius, overhead, min(1.001*probability, 0.999), R,
                 descent_method=self.pruner_method, precision=self.pruner_precision)
             pruning.append(pruning_)
         return tuple(pruning)
@@ -240,4 +238,3 @@ def CopyStrategizerFactory(strategies, name="CopyStrategizer"):
     """
     return type("CopyStrategizer", (CopyStrategizer,),
                 {"strategies": strategies, "name": name})
-
