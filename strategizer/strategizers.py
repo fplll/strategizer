@@ -3,7 +3,6 @@
 Strategizers are used to find strategies for BKZ reduction.
 """
 
-from fpylll import BKZ
 from .bkz import CallbackStrategy
 from .mdc import nodes_per_sec
 from .volumes import gaussian_heuristic, gh_margin
@@ -18,8 +17,10 @@ class EmptyStrategizer(object):
     name = "EmptyStrategy"
     min_block_size = 0
     Strategy = CallbackStrategy
+    pruner_method = "hybrid"
+    pruner_precision = 53
 
-    def __init__(self, block_size):
+    def __init__(self, block_size, pruner_method="hybrid", pruner_precision=53):
         """
 
         :param block_size: block size to consider
@@ -27,6 +28,8 @@ class EmptyStrategizer(object):
         """
         self.block_size = block_size
         self.queries = []
+        self.pruner_method = pruner_method
+        self.pruner_precision = pruner_precision
 
     def what(self, queries):
         """
@@ -107,7 +110,7 @@ def SimplePreprocStrategizerFactory(start, stop, step_size):
 SimplePreprocStrategizer16248 = SimplePreprocStrategizerFactory(16, 24, 8)
 
 
-class OnePreprocStrategizerTemplate(EmptyStrategizer):
+class OneTourPreprocStrategizerTemplate(EmptyStrategizer):
     """
     """
 
@@ -115,18 +118,54 @@ class OnePreprocStrategizerTemplate(EmptyStrategizer):
 
     def preproc(self, inp):
         """
-        Preprocess with one tour of 8,16,24,…,block_size-20-1
+        Preprocess with one tour of self.preprocessing_block_size
         """
         return [self.preprocessing_block_size]
 
 
-def OnePreprocStrategizerFactory(block_size):
+def OneTourPreprocStrategizerFactory(block_size):
     """
-    Create ``OnePreprocStrategizer`` for for ``block_size``
+    Create ``OneTourPreprocStrategizer`` for for ``block_size``
     """
     name = "OnePreprocStrategy-%d"%(block_size)
-    return type("OnePreprocStrategizer",
-                (OnePreprocStrategizerTemplate,),
+    return type("OneTourPreprocStrategizer",
+                (OneTourPreprocStrategizerTemplate,),
+                {"name": name, "preprocessing_block_size": block_size,
+                 "min_block_size": block_size+1})
+
+
+PROGRESSIVE_STEP = 10
+PROGRESSIVE_MIN = 22
+
+
+class ProgressivePreprocStrategizerTemplate(EmptyStrategizer):
+    """
+    """
+
+    name = "ProgressivePreprocStrategy-block_size"
+
+    def preproc(self, inp):
+        """
+        Preprocess with one tour of b for increasing  b <= self.preprocessing_block_size
+        """
+        L = [self.preprocessing_block_size]
+        x = self.preprocessing_block_size - PROGRESSIVE_STEP
+        step = PROGRESSIVE_STEP
+        while x > progressiveMin:
+            L = [x] + L
+            step -= 2
+            x -= step
+            step = max(step, 4)
+        return L
+
+
+def ProgressivePreprocStrategizerFactory(block_size):
+    """
+    Create ``ProgressivePreprocStrategizer`` for for ``block_size``
+    """
+    name = "ProgressivePreprocStrategy-%d"%(block_size)
+    return type("ProgressivePreprocStrategizer",
+                (ProgressivePreprocStrategizerTemplate,),
                 {"name": name, "preprocessing_block_size": block_size,
                  "min_block_size": block_size+1})
 
@@ -162,7 +201,9 @@ class PruningStrategizer(EmptyStrategizer):
 
         for i in range(-PruningStrategizer.GH_FACTORS_STEPS, PruningStrategizer.GH_FACTORS_STEPS+1):
             radius = gh_margin(block_size) ** (1. * i / PruningStrategizer.GH_FACTORS_STEPS)
-            pruning_ = prune(radius, overhead, min(1.001*probability, 0.999), R)
+            pruning_ = prune(
+                radius, overhead, min(1.001*probability, 0.999), R,
+                descent_method=self.pruner_method, precision=self.pruner_precision)
             pruning.append(pruning_)
         return tuple(pruning)
 
@@ -197,4 +238,3 @@ def CopyStrategizerFactory(strategies, name="CopyStrategizer"):
     """
     return type("CopyStrategizer", (CopyStrategizer,),
                 {"strategies": strategies, "name": name})
-

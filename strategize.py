@@ -21,7 +21,8 @@ from strategizer.bkz import CallbackBKZ
 from strategizer.bkz import CallbackBKZParam as Param
 from strategizer.config import logging, git_revision
 from strategizer.util import chunk_iterator
-from strategizer.strategizers import PruningStrategizer, OnePreprocStrategizerFactory
+from strategizer.strategizers import PruningStrategizer,\
+    OneTourPreprocStrategizerFactory, ProgressivePreprocStrategizerFactory
 logger = logging.getLogger(__name__)
 
 
@@ -93,6 +94,8 @@ def callback_roundtrip(alive, k, connections, data):
 
 
 def discover_strategy(block_size, Strategizer, strategies,
+                      pruner_method="hybrid",
+                      pruner_precision=53,
                       nthreads=1, nsamples=50):
     """Discover a strategy using ``Strategizer``
 
@@ -109,7 +112,7 @@ def discover_strategy(block_size, Strategizer, strategies,
     k = nthreads
     m = nsamples
 
-    strategizer = Strategizer(block_size)
+    strategizer = Strategizer(block_size, pruner_method=pruner_method, pruner_precision=pruner_precision)
 
     # everybody is alive in the beginning
     alive = range(m)
@@ -156,7 +159,8 @@ def discover_strategy(block_size, Strategizer, strategies,
 
     strategy = Strategy(block_size=block_size,
                         preprocessing_block_sizes=preproc_params,
-                        pruning_parameters=pruning_params)
+                        pruning_parameters=pruning_params
+                        )
 
     active_children()
 
@@ -171,6 +175,9 @@ def strategize(max_block_size,
                existing_strategies=None,
                min_block_size=3,
                nthreads=1, nsamples=50,
+               pruner_method="hybrid",
+               pruner_precision=53,
+               StrategizerFactory=ProgressivePreprocStrategizerFactory,
                dump_filename=None):
     """
     *one* preprocessing block size + pruning.
@@ -206,7 +213,7 @@ def strategize(max_block_size,
         state = []
 
         try:
-            p = max(strategies[-1].preprocessing_block_sizes[0] - 8,0)
+            p = max(strategies[-1].preprocessing_block_sizes[-1] - 2, 0)
         except (IndexError,):
             p = 0
 
@@ -214,7 +221,7 @@ def strategize(max_block_size,
         while p < block_size:
             if p >= 4:
                 strategizer_p = type("PreprocStrategizer-%d"%p,
-                                     (strategizer, OnePreprocStrategizerFactory(p)), {})
+                                     (strategizer, StrategizerFactory(p)), {})
             else:
                 strategizer_p = strategizer
 
@@ -222,7 +229,10 @@ def strategize(max_block_size,
                                                          strategizer_p,
                                                          strategies,
                                                          nthreads=nthreads,
-                                                         nsamples=nsamples)
+                                                         nsamples=nsamples,
+                                                         pruner_method=pruner_method,
+                                                         pruner_precision=pruner_precision
+                                                         )
 
             total_time = sum([stat.total_time for stat in stats])/nsamples
             svp_time = sum([stat.svp_time for stat in stats])/nsamples
@@ -230,7 +240,7 @@ def strategize(max_block_size,
             state.append((total_time, strategy, stats, strategizer, queries))
             logger.info("%10.6fs, %10.6fs, %10.6fs, %s", total_time, preproc_time, svp_time, strategy)
 
-            if prev_best_total_time and 1.5*prev_best_total_time < total_time:
+            if p > 30 and prev_best_total_time and 1.3*prev_best_total_time < total_time:
                 break
             p += 2
             if not prev_best_total_time or prev_best_total_time > total_time:
@@ -253,6 +263,10 @@ def strategize(max_block_size,
     return strategies, times
 
 
+StrategizerFactoryDictionnary = {
+    "ProgressivePreproc": ProgressivePreprocStrategizerFactory,
+    "OneTourPreproc": OneTourPreprocStrategizerFactory}
+
 if __name__ == '__main__':
     import argparse
     import logging
@@ -264,6 +278,12 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--min-block-size', help='minimal block size to consider', type=int, default=3)
     parser.add_argument('-u', '--max-block-size', help='minimal block size to consider', type=int, default=50)
     parser.add_argument('-f', '--filename', help='json file to store strategies to', type=str, default=None)
+    parser.add_argument('-m', '--method', help='descent method for the pruner {gradient,nm,hybrid}',
+                        type=str, default="hybrid")
+    parser.add_argument('-p', '--prec', help='floating point precision in the pruner (default=53 (double)) ',
+                        type=int, default=53)
+    parser.add_argument('-S', '--strategizer', help='Strategizer : {ProgressivePreproc,OneTourPreproc}',
+                        type=str, default="ProgressivePreproc")
 
     args = parser.parse_args()
 
@@ -283,4 +303,7 @@ if __name__ == '__main__':
     strategize(nthreads=args.threads, nsamples=args.samples,
                min_block_size=args.min_block_size,
                max_block_size=args.max_block_size,
+               pruner_method=args.method,
+               pruner_precision=args.prec,
+               StrategizerFactory=StrategizerFactoryDictionnary[args.strategizer],
                dump_filename=args.filename)
