@@ -151,7 +151,7 @@ class ProgressivePreprocStrategizerTemplate(EmptyStrategizer):
         L = [self.preprocessing_block_size]
         x = self.preprocessing_block_size - PROGRESSIVE_STEP
         step = PROGRESSIVE_STEP
-        while x > progressiveMin:
+        while x > PROGRESSIVE_MIN:
             L = [x] + L
             step -= 2
             x -= step
