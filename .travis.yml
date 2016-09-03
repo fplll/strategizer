@@ -1,0 +1,38 @@
+sudo: required
+dist: trusty
+language: python
+python:
+  - "2.7"
+  - "3.5"
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.9
+      - libgmp-dev
+      - libmpfr-dev
+      - libqd-dev
+      - build-essential
+      - libtool
+      - autoconf
+      - python-pip
+      - python-dev
+      - python-flake8
+
+install:
+  - export CXX="g++-4.9"
+  - ./setup.sh
+
+before_script:
+  - flake8 --max-line-length=120 --max-complexity=16 --ignore=E22,E241 --exclude=fpylll/,fplll/ .
+
+script:
+  - LD_LIBRARY_PATH="$VIRTUAL_ENV/lib" python ./set_mdc.py
+  - LD_LIBRARY_PATH="$VIRTUAL_ENV/lib" python ./strategize.py -u 10 -t 1 -s 2
+
+
+notifications:
+  on_success: change
+  on_failure: always
