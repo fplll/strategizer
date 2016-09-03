@@ -22,6 +22,7 @@ def load_mdc():
 
 load_mdc()
 
+
 def nodes_per_sec(n):
     global nps
     return nps
