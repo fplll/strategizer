@@ -6,5 +6,5 @@ def chunk_iterator(lst, step):
     :param step: number of elements to return
 
     """
-    for i in xrange(0, len(lst), step):
+    for i in range(0, len(lst), step):
         yield tuple(lst[j] for j in range(i, min(i+step, len(lst))))

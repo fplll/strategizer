@@ -4,20 +4,20 @@ u"""
 .. moduleauthor:: Léo Ducas  <fplll-devel@googlegroups.com>
 .. moduleauthor:: Marc Stevens  <fplll-devel@googlegroups.com>
 """
-import commands
+import subprocess
 import logging
 
 
 "Git Revision"
 
 git_revision = []
-cmds = ["git show -s --format=%cd HEAD --date=short",
-        "git rev-parse --abbrev-ref HEAD",
-        "git show -s --format=%h HEAD --date=short"]
+cmds = [("git", "show", "-s", "--format=%cd", "HEAD", "--date=short"),
+        ("git", "rev-parse", "--abbrev-ref", "HEAD"),
+        ("git", "show", "-s", "--format=%h", "HEAD", "--date=short")]
 
 for cmd in cmds:
     try:
-        r = commands.getoutput(cmd)
+        r = str(subprocess.check_output(cmd).rstrip())
         git_revision.append(r)
     except ValueError:
         pass

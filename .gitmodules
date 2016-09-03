@@ -1,6 +1,6 @@
 [submodule "fplll"]
 	path = fplll
-	url = git@github.com:fplll/fplll.git
+	url = https://github.com/fplll/fplll.git
 [submodule "fpylll"]
 	path = fpylll
-	url = git@github.com:fplll/fpylll.git
+	url = https://github.com/fplll/fpylll.git 
