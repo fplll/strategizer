@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def load_mdc():
     global nps
-    with open("mdc.data", "r") as f:
+    with open("mdc.data", "rb") as f:
         nps = float(pickle.load(f))
     logger.info("enum nodes per sec: %13.1f", nps)
 

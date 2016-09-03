@@ -13,6 +13,6 @@ logger = logging.getLogger(__name__)
 nodes, time = bench_enumeration(70)
 logger.info("  fplll :: nodes: %12.1f, time: %6.4fs, nodes/s: %12.1f"%(nodes, time, nodes/time))
 
-f = open("mdc.data", "w")
+f = open("mdc.data", "wb")
 pickle.dump(nodes/time, f)
 f.close()
