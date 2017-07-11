@@ -18,9 +18,8 @@ class EmptyStrategizer(object):
     min_block_size = 0
     Strategy = CallbackStrategy
     pruner_method = "hybrid"
-    pruner_precision = 53
 
-    def __init__(self, block_size, pruner_method="hybrid", pruner_precision=53):
+    def __init__(self, block_size, pruner_method="hybrid"):
         """
 
         :param block_size: block size to consider
@@ -29,7 +28,6 @@ class EmptyStrategizer(object):
         self.block_size = block_size
         self.queries = []
         self.pruner_method = pruner_method
-        self.pruner_precision = pruner_precision
 
     def what(self, queries):
         """
@@ -203,7 +201,7 @@ class PruningStrategizer(EmptyStrategizer):
             radius = gh_margin(block_size) ** (1. * i / PruningStrategizer.GH_FACTORS_STEPS)
             pruning_ = prune(
                 radius, overhead, min(1.001*probability, 0.999), R,
-                descent_method=self.pruner_method, precision=self.pruner_precision)
+                descent_method=self.pruner_method)
             pruning.append(pruning_)
         return tuple(pruning)
 

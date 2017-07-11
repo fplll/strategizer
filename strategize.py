@@ -14,7 +14,7 @@ from __future__ import absolute_import
 from multiprocessing import Queue, Pipe, Process, active_children
 
 from fpylll import BKZ, IntegerMatrix
-from fpylll.algorithms.bkz_stats import BKZStats
+from fpylll.algorithms.bkz_stats import BKZTreeTracer
 from fpylll.fplll.bkz_param import Strategy, dump_strategies_json
 
 from strategizer.bkz import CallbackBKZ
@@ -54,18 +54,18 @@ def worker_process(A, params, queue):
 
     """
     bkz = CallbackBKZ(A)
-    stats = BKZStats(bkz)
+    tracer = BKZTreeTracer(bkz, start_clocks=True)
 
-    with stats.context("tour"):
-        with stats.context("preproc"):
+    with tracer.context(("tour",0)):
+        with tracer.context("preproc"):
             # HACK to get preproc time
-            bkz.randomize_block(0, params.block_size, stats, density=params.rerandomization_density)
-        bkz.svp_reduction(0, params.block_size, params, stats)
+            bkz.randomize_block(0, params.block_size, tracer, density=params.rerandomization_density)
+        bkz.svp_reduction(0, params.block_size, params, tracer)
 
+    tracer.exit()
     # close connection
     params.strategies[params.block_size].connection.send(None)
-    stats.bkz = None  # let's not pickle the BKZ class unnecessarily
-    queue.put(stats)
+    queue.put(tracer.trace)
 
 
 def callback_roundtrip(alive, k, connections, data):
@@ -95,7 +95,6 @@ def callback_roundtrip(alive, k, connections, data):
 
 def discover_strategy(block_size, Strategizer, strategies,
                       pruner_method="hybrid",
-                      pruner_precision=53,
                       nthreads=1, nsamples=50):
     """Discover a strategy using ``Strategizer``
 
@@ -112,7 +111,7 @@ def discover_strategy(block_size, Strategizer, strategies,
     k = nthreads
     m = nsamples
 
-    strategizer = Strategizer(block_size, pruner_method=pruner_method, pruner_precision=pruner_precision)
+    strategizer = Strategizer(block_size, pruner_method=pruner_method)
 
     # everybody is alive in the beginning
     alive = range(m)
@@ -122,7 +121,7 @@ def discover_strategy(block_size, Strategizer, strategies,
     for i in range(m):
         manager, worker = Pipe()
         connections.append((manager, worker))
-        A = IntegerMatrix.random(block_size, "qary", bits=5*block_size, k=1)
+        A = IntegerMatrix.random(block_size, "qary", bits=30, k=block_size//2)
         strategies_ = list(strategies)
         strategies_.append(Strategizer.Strategy(block_size, worker))
 
@@ -176,7 +175,6 @@ def strategize(max_block_size,
                min_block_size=3,
                nthreads=1, nsamples=50,
                pruner_method="hybrid",
-               pruner_precision=53,
                StrategizerFactory=ProgressivePreprocStrategizerFactory,
                dump_filename=None):
     """
@@ -231,12 +229,11 @@ def strategize(max_block_size,
                                                          nthreads=nthreads,
                                                          nsamples=nsamples,
                                                          pruner_method=pruner_method,
-                                                         pruner_precision=pruner_precision
                                                          )
 
-            total_time = sum([stat.total_time for stat in stats])/nsamples
-            svp_time = sum([stat.svp_time for stat in stats])/nsamples
-            preproc_time = sum([stat.tours[0]["preproc time"] for stat in stats])/nsamples
+            total_time = sum([float(stat.data["cputime"]) for stat in stats])/nsamples
+            svp_time = sum([float(stat.find("enumeration").data["cputime"]) for stat in stats])/nsamples
+            preproc_time = sum([float(stat.find("preproc").data["cputime"]) for stat in stats])/nsamples
             state.append((total_time, strategy, stats, strategizer, queries))
             logger.info("%10.6fs, %10.6fs, %10.6fs, %s", total_time, preproc_time, svp_time, strategy)
 
@@ -304,6 +301,5 @@ if __name__ == '__main__':
                min_block_size=args.min_block_size,
                max_block_size=args.max_block_size,
                pruner_method=args.method,
-               pruner_precision=args.prec,
                StrategizerFactory=StrategizerFactoryDictionnary[args.strategizer],
                dump_filename=args.filename)

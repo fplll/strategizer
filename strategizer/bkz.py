@@ -75,7 +75,7 @@ class CallbackStrategy(object):
         :param stats: stats to extract preprocessing costs
 
         """
-        preproc_time = stats.current_tour["preproc time"]
+        preproc_time = float(stats.current.get("preproc")["cputime"])
         if self._pruning_parameters is None:
             self._pruning_parameters = self.callback("pruning",
                                                      tuple(r),
