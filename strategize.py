@@ -231,9 +231,16 @@ def strategize(max_block_size,
                                                          pruner_method=pruner_method,
                                                          )
 
-            total_time = sum([float(stat.data["cputime"]) for stat in stats])/nsamples
-            svp_time = sum([float(stat.find("enumeration").data["cputime"]) for stat in stats])/nsamples
-            preproc_time = sum([float(stat.find("preprocessing").data["cputime"]) for stat in stats])/nsamples
+            stats = [stat for stat in stats if stat != None]
+
+            total_time = sorted([float(stat.data["cputime"]) for stat in stats])
+            svp_time = sorted([float(stat.find("enumeration").data["cputime"]) for stat in stats])
+            preproc_time = sorted([float(stat.find("preprocessing").data["cputime"]) for stat in stats])
+
+            total_time = total_time[nsamples//2]
+            svp_time = svp_time[nsamples//2]
+            preproc_time = preproc_time[nsamples//2]
+
             state.append((total_time, strategy, stats, strategizer, queries))
             logger.info("%10.6fs, %10.6fs, %10.6fs, %s", total_time, preproc_time, svp_time, strategy)
 
