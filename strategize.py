@@ -121,7 +121,7 @@ def discover_strategy(block_size, Strategizer, strategies,
     for i in range(m):
         manager, worker = Pipe()
         connections.append((manager, worker))
-        A = IntegerMatrix.random(block_size, "qary", bits=30, k=block_size//2)
+        A = IntegerMatrix.random(block_size, "qary", bits=5*block_size, k=1)
         strategies_ = list(strategies)
         strategies_.append(Strategizer.Strategy(block_size, worker))
 
