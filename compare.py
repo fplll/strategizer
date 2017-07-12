@@ -8,7 +8,7 @@ from __future__ import absolute_import
 from collections import OrderedDict
 from fpylll import BKZ, IntegerMatrix
 from fpylll.fplll.bkz_param import Strategy, dump_strategies_json
-from fpylll.algorithms.bkz_stats import BKZStats
+from fpylll.algorithms.bkz_stats import BKZTreeTracer
 from multiprocessing import Queue, Process
 from strategizer.bkz import CallbackBKZ
 from strategizer.bkz import CallbackBKZParam as Param
@@ -29,18 +29,19 @@ def svp_time(A, params, return_queue=None):
     """
     # HACK to count LLL time
     t = time.time()
-    inst = CallbackBKZ(A)
+    bkz = CallbackBKZ(A)
     t = time.time() - t
-    stats = BKZStats(inst)
+    tracer = BKZTreeTracer(bkz, start_clocks=True)
 
-    with stats.context("tour"):
-        stats.current_tour["preproc time"] += t
-        inst.svp_reduction(0, params.block_size, params, stats)
+    with tracer.context("tour"):
+        bkz.svp_reduction(0, params.block_size, params, tracer)
 
-    stats.shortest_vector_norm = A[0].norm()
-    stats.bkz = None
+    tracer.exit()
+
+    tracer.trace.data["|A_0|"] = A[0].norm()
+
     if return_queue:
-        return_queue.put(stats)
+        return_queue.put(tracer.trace)
     else:
         return stats
 
@@ -103,12 +104,12 @@ def compare_strategies(strategies_list, nthreads=1, nsamples=50,
                     process.join()
                     stats.append(return_queue.get())
 
-            t = sum([stat.total_time for stat in stats])/nsamples
-            n = sum([stat.shortest_vector_norm for stat in stats])/nsamples
-            logger.info("%10.6fs, %s, %.1f"%(t, strategy, n))
+            total_time = sum([float(stat.data["cputime"]) for stat in stats])/nsamples
+            length    = sum([stat.data["|A_0|"] for stat in stats])/nsamples
+            logger.info("%10.6fs, %s, %.1f"%(total_time, strategy, length))
 
-            result["total time"] = t
-            result["length"] = n
+            result["total time"] = total_time
+            result["length"] = length
             result["stats"] = stats
 
             results[block_size].append(result)
