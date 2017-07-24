@@ -43,7 +43,7 @@ def svp_time(A, params, return_queue=None):
     if return_queue:
         return_queue.put(tracer.trace)
     else:
-        return stats
+        return tracer.trace
 
 
 def compare_strategies(strategies_list, nthreads=1, nsamples=50,
