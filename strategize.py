@@ -59,7 +59,8 @@ def worker_process(A, params, queue):
     with tracer.context(("tour", 0)):
         with tracer.context("preprocessing"):
             # HACK to get preproc time
-            bkz.randomize_block(1, params.block_size, tracer, density=params.rerandomization_density)
+            # bkz.randomize_block(1, params.block_size, tracer, density=params.rerandomization_density)
+            pass
         bkz.svp_reduction(0, params.block_size, params, tracer)
 
     tracer.exit()
@@ -211,7 +212,7 @@ def strategize(max_block_size,
         state = []
 
         try:
-            p = max(strategies[-1].preprocessing_block_sizes[-1] - 2, 0)
+            p = max(strategies[-1].preprocessing_block_sizes[-1] - 4, 0)
         except (IndexError,):
             p = 0
 
@@ -244,7 +245,7 @@ def strategize(max_block_size,
             state.append((total_time, strategy, stats, strategizer, queries))
             logger.info("%10.6fs, %10.6fs, %10.6fs, %s", total_time, preproc_time, svp_time, strategy)
 
-            if p > 30 and prev_best_total_time and 1.3*prev_best_total_time < total_time:
+            if prev_best_total_time and 1.3*prev_best_total_time < total_time:
                 break
             p += 2
             if not prev_best_total_time or prev_best_total_time > total_time:
