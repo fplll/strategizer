@@ -20,6 +20,7 @@ def load_mdc():
         nps = float(pickle.load(f))
     logger.info("enum nodes per sec: %13.1f", nps)
 
+
 load_mdc()
 
 

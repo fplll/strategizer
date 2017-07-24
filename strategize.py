@@ -56,7 +56,7 @@ def worker_process(A, params, queue):
     bkz = CallbackBKZ(A)
     tracer = BKZTreeTracer(bkz, start_clocks=True)
 
-    with tracer.context(("tour",0)):
+    with tracer.context(("tour", 0)):
         with tracer.context("preproc"):
             # HACK to get preproc time
             bkz.randomize_block(0, params.block_size, tracer, density=params.rerandomization_density)

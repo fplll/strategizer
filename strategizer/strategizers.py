@@ -105,6 +105,7 @@ def SimplePreprocStrategizerFactory(start, stop, step_size):
                 {"name": name, "start": start, "stop": stop, "step_size": step_size,
                  "min_block_size": start+stop+1})
 
+
 SimplePreprocStrategizer16248 = SimplePreprocStrategizerFactory(16, 24, 8)
 
 
