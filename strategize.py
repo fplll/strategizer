@@ -57,9 +57,9 @@ def worker_process(A, params, queue):
     tracer = BKZTreeTracer(bkz, start_clocks=True)
 
     with tracer.context(("tour", 0)):
-        with tracer.context("preproc"):
+        with tracer.context("preprocessing"):
             # HACK to get preproc time
-            bkz.randomize_block(0, params.block_size, tracer, density=params.rerandomization_density)
+            bkz.randomize_block(1, params.block_size, tracer, density=params.rerandomization_density)
         bkz.svp_reduction(0, params.block_size, params, tracer)
 
     tracer.exit()
@@ -121,7 +121,7 @@ def discover_strategy(block_size, Strategizer, strategies,
     for i in range(m):
         manager, worker = Pipe()
         connections.append((manager, worker))
-        A = IntegerMatrix.random(block_size, "qary", bits=30, k=block_size//2)
+        A = IntegerMatrix.random(block_size, "qary", bits=5*block_size, k=1)
         strategies_ = list(strategies)
         strategies_.append(Strategizer.Strategy(block_size, worker))
 
@@ -231,9 +231,16 @@ def strategize(max_block_size,
                                                          pruner_method=pruner_method,
                                                          )
 
-            total_time = sum([float(stat.data["cputime"]) for stat in stats])/nsamples
-            svp_time = sum([float(stat.find("enumeration").data["cputime"]) for stat in stats])/nsamples
-            preproc_time = sum([float(stat.find("preproc").data["cputime"]) for stat in stats])/nsamples
+            stats = [stat for stat in stats if stat is not None]
+
+            total_time = sorted([float(stat.data["cputime"]) for stat in stats])
+            svp_time = sorted([float(stat.find("enumeration").data["cputime"]) for stat in stats])
+            preproc_time = sorted([float(stat.find("preprocessing").data["cputime"]) for stat in stats])
+
+            total_time = total_time[nsamples//2]
+            svp_time = svp_time[nsamples//2]
+            preproc_time = preproc_time[nsamples//2]
+
             state.append((total_time, strategy, stats, strategizer, queries))
             logger.info("%10.6fs, %10.6fs, %10.6fs, %s", total_time, preproc_time, svp_time, strategy)
 
@@ -277,10 +284,8 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--filename', help='json file to store strategies to', type=str, default=None)
     parser.add_argument('-m', '--method', help='descent method for the pruner {gradient,nm,hybrid}',
                         type=str, default="hybrid")
-    parser.add_argument('-p', '--prec', help='floating point precision in the pruner (default=53 (double)) ',
-                        type=int, default=53)
     parser.add_argument('-S', '--strategizer', help='Strategizer : {ProgressivePreproc,OneTourPreproc}',
-                        type=str, default="ProgressivePreproc")
+                        type=str, default="OneTourPreproc")
 
     args = parser.parse_args()
 
