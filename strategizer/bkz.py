@@ -88,7 +88,7 @@ class CallbackStrategy(object):
         closest_dist = 2**80
         best = None
         for pruning in self._pruning_parameters:
-            if abs(pruning.radius_factor - gh_factor) < closest_dist:
+            if abs(pruning.gh_factor - gh_factor) < closest_dist:
                 best = pruning
         return best
 

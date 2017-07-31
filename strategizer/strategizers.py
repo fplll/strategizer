@@ -6,7 +6,7 @@ Strategizers are used to find strategies for BKZ reduction.
 from .bkz import CallbackStrategy
 from .mdc import nodes_per_sec
 from .volumes import gaussian_heuristic, gh_margin
-from fpylll import prune
+from fpylll import Pruning
 
 
 class EmptyStrategizer(object):
@@ -200,9 +200,9 @@ class PruningStrategizer(EmptyStrategizer):
 
         for i in range(-PruningStrategizer.GH_FACTORS_STEPS, PruningStrategizer.GH_FACTORS_STEPS+1):
             radius = gh_margin(block_size) ** (1. * i / PruningStrategizer.GH_FACTORS_STEPS)
-            pruning_ = prune(
-                radius, overhead, min(1.001*probability, 0.999), R,
-                descent_method=self.pruner_method)
+            pruning_ = Pruning.run(
+                radius, overhead,  R, min(1.05*probability, 0.999),
+                metric="probability")
             pruning.append(pruning_)
         return tuple(pruning)
 
