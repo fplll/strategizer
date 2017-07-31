@@ -6,7 +6,7 @@ u"""
 """
 
 import pickle
-from fpylll.tools import bench_enumeration
+from fpylll.tools.benchmark import bench_enumeration
 from strategizer.config import logging
 logger = logging.getLogger(__name__)
 
