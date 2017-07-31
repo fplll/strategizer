@@ -57,11 +57,11 @@ def worker_process(A, params, queue):
     tracer = BKZTreeTracer(bkz, start_clocks=True)
 
     with tracer.context(("tour", 0)):
-        # TODO interacts badly with initial size reduction
-        # with tracer.context("preprocessing"):
-        #     # HACK to get preproc time
-        #     # bkz.randomize_block(1, params.block_size, tracer, density=params.rerandomization_density)
-        #     pass
+        with tracer.context("preprocessing"):
+            # TODO interacts badly with initial size reduction
+            # HACK to get preproc time
+            # bkz.randomize_block(1, params.block_size, tracer, density=params.rerandomization_density)
+            pass
         bkz.svp_reduction(0, params.block_size, params, tracer)
 
     tracer.exit()
