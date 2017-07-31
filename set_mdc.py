@@ -10,7 +10,7 @@ from fpylll.tools.benchmark import bench_enumeration
 from strategizer.config import logging
 logger = logging.getLogger(__name__)
 
-nodes, time = bench_enumeration(70)
+nodes, time = bench_enumeration(64)
 logger.info("  fplll :: nodes: %12.1f, time: %6.4fs, nodes/s: %12.1f"%(nodes, time, nodes/time))
 
 f = open("mdc.data", "wb")
