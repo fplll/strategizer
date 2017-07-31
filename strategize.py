@@ -160,8 +160,7 @@ def discover_strategy(block_size, Strategizer, strategies,
 
     strategy = Strategy(block_size=block_size,
                         preprocessing_block_sizes=preproc_params,
-                        pruning_parameters=pruning_params
-                        )
+                        pruning_parameters=pruning_params)
 
     active_children()
 
