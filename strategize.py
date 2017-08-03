@@ -13,7 +13,7 @@ Find BKZ reduction strategies using timing experiments.
 from __future__ import absolute_import
 from multiprocessing import Queue, Pipe, Process, active_children
 
-from fpylll import BKZ, IntegerMatrix
+from fpylll import BKZ, IntegerMatrix, GSO, LLL
 from fpylll.algorithms.bkz_stats import BKZTreeTracer
 from fpylll.fplll.bkz_param import Strategy, dump_strategies_json
 
@@ -53,15 +53,11 @@ def worker_process(A, params, queue):
     :param queue: queue used for communication
 
     """
-    bkz = CallbackBKZ(A)
+    M = GSO.Mat(A)
+    bkz = CallbackBKZ(M)  # suppresses initial LLL call
     tracer = BKZTreeTracer(bkz, start_clocks=True)
 
     with tracer.context(("tour", 0)):
-        with tracer.context("preprocessing"):
-            # TODO interacts badly with initial size reduction
-            # HACK to get preproc time
-            # bkz.randomize_block(1, params.block_size, tracer, density=params.rerandomization_density)
-            pass
         bkz.svp_reduction(0, params.block_size, params, tracer)
 
     tracer.exit()
