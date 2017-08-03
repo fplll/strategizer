@@ -120,6 +120,7 @@ def discover_strategy(block_size, Strategizer, strategies,
         manager, worker = Pipe()
         connections.append((manager, worker))
         A = IntegerMatrix.random(block_size, "qary", bits=30, k=block_size//2, int_type="long")
+
         strategies_ = list(strategies)
         strategies_.append(Strategizer.Strategy(block_size, worker))
 
@@ -208,9 +209,9 @@ def strategize(max_block_size,
         state = []
 
         try:
-            p = max(strategies[-1].preprocessing_block_sizes[-1] - 4, 0)
+            p = max(strategies[-1].preprocessing_block_sizes[-1] - 4, 2)
         except (IndexError,):
-            p = 0
+            p = 2
 
         prev_best_total_time = None
         while p < block_size:
@@ -230,13 +231,14 @@ def strategize(max_block_size,
 
             stats = [stat for stat in stats if stat is not None]
 
-            total_time = sorted([float(stat.data["cputime"]) for stat in stats])
-            svp_time = sorted([float(stat.find("enumeration").data["cputime"]) for stat in stats])
-            preproc_time = sorted([float(stat.find("preprocessing").data["cputime"]) for stat in stats])
+            total_time = sorted([float(stat.data["cputime"]) for stat in stats])[4:-4]
+            svp_time = sorted([float(stat.find("enumeration").data["cputime"]) for stat in stats])[4:-4]
+            preproc_time = sorted([float(stat.find("preprocessing").data["cputime"]) for stat in stats])[4:-4]
 
-            total_time = total_time[nsamples//2]
-            svp_time = svp_time[nsamples//2]
-            preproc_time = preproc_time[nsamples//2]
+            total_time = sum(total_time)/len(total_time)
+            svp_time = sum(svp_time)/len(svp_time)
+            preproc_time = sum(preproc_time)/len(preproc_time)
+
 
             state.append((total_time, strategy, stats, strategizer, queries))
             logger.info("%10.6fs, %10.6fs, %10.6fs, %s", total_time, preproc_time, svp_time, strategy)
@@ -258,7 +260,7 @@ def strategize(max_block_size,
         logger.info("%10.6fs, %s", total_time, strategy)
         logger.info("")
 
-        if total_time > 0.1 and nsamples > 2*max(32, nthreads):
+        if total_time > 0.1 and nsamples > 2*nthreads:
             nsamples /= 2
 
     return strategies, times
