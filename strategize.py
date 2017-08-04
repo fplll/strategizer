@@ -231,9 +231,10 @@ def strategize(max_block_size,
 
             stats = [stat for stat in stats if stat is not None]
 
-            total_time = sorted([float(stat.data["cputime"]) for stat in stats])[4:-4]
-            svp_time = sorted([float(stat.find("enumeration").data["cputime"]) for stat in stats])[4:-4]
-            preproc_time = sorted([float(stat.find("preprocessing").data["cputime"]) for stat in stats])[4:-4]
+            kill = 4 if len(stats) >= 16 else 0  # kill some outliers?
+            total_time = sorted([float(stat.data["cputime"]) for stat in stats])[kill:-kill]
+            svp_time = sorted([float(stat.find("enumeration").data["cputime"]) for stat in stats])[kill:-kill]
+            preproc_time = sorted([float(stat.find("preprocessing").data["cputime"]) for stat in stats])[kill:-kill]
 
             total_time = sum(total_time)/len(total_time)
             svp_time = sum(svp_time)/len(svp_time)
