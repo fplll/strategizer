@@ -13,7 +13,7 @@ Find BKZ reduction strategies using timing experiments.
 from __future__ import absolute_import
 from multiprocessing import Queue, Pipe, Process, active_children
 
-from fpylll import BKZ, IntegerMatrix, GSO, LLL
+from fpylll import BKZ, IntegerMatrix, GSO
 from fpylll.algorithms.bkz_stats import BKZTreeTracer
 from fpylll.fplll.bkz_param import Strategy, dump_strategies_json
 
@@ -238,7 +238,6 @@ def strategize(max_block_size,
             total_time = sum(total_time)/len(total_time)
             svp_time = sum(svp_time)/len(svp_time)
             preproc_time = sum(preproc_time)/len(preproc_time)
-
 
             state.append((total_time, strategy, stats, strategizer, queries))
             logger.info("%10.6fs, %10.6fs, %10.6fs, %s", total_time, preproc_time, svp_time, strategy)
