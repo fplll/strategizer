@@ -133,6 +133,31 @@ def OneTourPreprocStrategizerFactory(block_size):
                  "min_block_size": block_size+1})
 
 
+class TwoTourPreprocStrategizerTemplate(EmptyStrategizer):
+    """
+    """
+
+    name = "TwoPreprocStrategy-block_size"
+
+    def preproc(self, inp):
+        """
+        Preprocess with two tours of self.preprocessing_block_size
+        """
+        return [self.preprocessing_block_size, self.preprocessing_block_size]
+
+
+def TwoTourPreprocStrategizerFactory(block_size):
+    """
+    Create ``TwoTourPreprocStrategizer`` for for ``block_size``
+    """
+    name = "TwoPreprocStrategy-%d"%(block_size)
+    return type("TwoTourPreprocStrategizer",
+                (TwoTourPreprocStrategizerTemplate,),
+                {"name": name, "preprocessing_block_size": block_size,
+                 "min_block_size": block_size+1})
+
+
+
 PROGRESSIVE_STEP = 10
 PROGRESSIVE_MIN = 22
 

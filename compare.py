@@ -75,16 +75,16 @@ def compare_strategies(strategies_list, nthreads=1, nsamples=50,
             if strategy.block_size not in S:
                 logger.warning("ignoring block_size: %3d of %s", strategy.block_size, strategy)
                 continue
-            S[strategy.block_size].append(strategy)
+            S[strategy.block_size].append(strategies)
 
     results = [[] for bs in range(max_block_size+1)]
 
     for block_size in range(min_block_size, max_block_size+1):
         logger.info("= block size: %3d, m: %3d =", block_size, nsamples)
-        for strategy in S[block_size]:
+        for strategies in S[block_size]:
 
             return_queue = Queue()
-            result = OrderedDict([("strategy", strategy),
+            result = OrderedDict([("strategy", strategies[block_size]),
                                   ("total time", None)])
 
             stats = []
@@ -92,7 +92,7 @@ def compare_strategies(strategies_list, nthreads=1, nsamples=50,
             for chunk in chunk_iterator(range(nsamples), nthreads):
                 processes = []
                 for i in chunk:
-                    A = IntegerMatrix.random(block_size, "qary", bits=5*block_size, k=1)
+                    A = IntegerMatrix.random(block_size, "qary", bits=30, k=block_size//2, int_type="long")
                     param = Param(block_size=block_size,
                                   strategies=strategies,
                                   flags=BKZ.VERBOSE)
@@ -106,7 +106,7 @@ def compare_strategies(strategies_list, nthreads=1, nsamples=50,
 
             total_time = sum([float(stat.data["cputime"]) for stat in stats])/nsamples
             length    = sum([stat.data["|A_0|"] for stat in stats])/nsamples
-            logger.info("%10.6fs, %s, %.1f"%(total_time, strategy, length))
+            logger.info("%10.6fs, %s, %.1f"%(total_time, strategies[block_size], length))
 
             result["total time"] = total_time
             result["length"] = length
