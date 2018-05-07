@@ -97,7 +97,6 @@ def compare_strategies(strategies_list, nthreads=1, nsamples=50,
                 processes = []
                 for i in chunk:
                     seed = 2**16 * block_size + i
-                    A = IntegerMatrix.random(block_size, "qary", bits=30, k=block_size//2, int_type="long")
                     param = Param(block_size=block_size,
                                   strategies=strategies,
                                   flags=BKZ.VERBOSE)
