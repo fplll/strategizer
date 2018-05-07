@@ -181,7 +181,6 @@ def FourTourPreprocStrategizerFactory(block_size):
                  "min_block_size": block_size+1})
 
 
-
 PROGRESSIVE_STEP = 10
 PROGRESSIVE_MIN = 22
 

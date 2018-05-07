@@ -292,7 +292,8 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--filename', help='json file to store strategies to', type=str, default=None)
     parser.add_argument('-m', '--method', help='descent method for the pruner {gradient,nm,hybrid}',
                         type=str, default="hybrid")
-    parser.add_argument('-S', '--strategizer', help='Strategizer : {ProgressivePreproc,OneTourPreproc,TwoTourPreproc,FourTourPreproc}',
+    parser.add_argument('-S', '--strategizer',
+                        help='Strategizer : {ProgressivePreproc,OneTourPreproc,TwoTourPreproc,FourTourPreproc}',
                         type=str, default="OneTourPreproc")
 
     args = parser.parse_args()
