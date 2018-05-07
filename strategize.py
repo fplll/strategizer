@@ -13,7 +13,7 @@ Find BKZ reduction strategies using timing experiments.
 from __future__ import absolute_import
 from multiprocessing import Queue, Pipe, Process, active_children
 
-from fpylll import BKZ, IntegerMatrix, GSO
+from fpylll import BKZ, IntegerMatrix, GSO, FPLLL
 from fpylll.algorithms.bkz_stats import BKZTreeTracer
 from fpylll.fplll.bkz_param import Strategy, dump_strategies_json
 
@@ -47,7 +47,7 @@ def find_best(state, fudge=1.01):
     return best
 
 
-def worker_process(A, params, queue):
+def worker_process(seed, params, queue):
     """
     This function is called to collect statistics.
 
@@ -56,6 +56,9 @@ def worker_process(A, params, queue):
     :param queue: queue used for communication
 
     """
+    FPLLL.set_random_seed(seed)
+    A = IntegerMatrix.random(params.block_size, "qary", bits=30, k=params.block_size//2, int_type="long")
+
     M = GSO.Mat(A)
     bkz = CallbackBKZ(M)  # suppresses initial LLL call
     tracer = BKZTreeTracer(bkz, start_clocks=True)
@@ -122,15 +125,13 @@ def discover_strategy(block_size, Strategizer, strategies,
     for i in range(m):
         manager, worker = Pipe()
         connections.append((manager, worker))
-        A = IntegerMatrix.random(block_size, "qary", bits=30, k=block_size//2, int_type="long")
-
         strategies_ = list(strategies)
         strategies_.append(Strategizer.Strategy(block_size, worker))
 
         # note: success probability, rerandomisation density etc. can be adapted here
         param = Param(block_size=block_size, strategies=strategies_, flags=BKZ.VERBOSE)
 
-        process = Process(target=worker_process, args=(A, param, return_queue))
+        process = Process(target=worker_process, args=(2**16 * block_size + i, param, return_queue))
         processes.append(process)
 
     callback = [None]*m
