@@ -22,7 +22,10 @@ from strategizer.bkz import CallbackBKZParam as Param
 from strategizer.config import logging, git_revision
 from strategizer.util import chunk_iterator
 from strategizer.strategizers import PruningStrategizer,\
-    OneTourPreprocStrategizerFactory, ProgressivePreprocStrategizerFactory
+    OneTourPreprocStrategizerFactory, \
+    TwoTourPreprocStrategizerFactory, \
+    FourTourPreprocStrategizerFactory, \
+    ProgressivePreprocStrategizerFactory
 logger = logging.getLogger(__name__)
 
 
@@ -272,7 +275,9 @@ def strategize(max_block_size,
 
 StrategizerFactoryDictionnary = {
     "ProgressivePreproc": ProgressivePreprocStrategizerFactory,
-    "OneTourPreproc": OneTourPreprocStrategizerFactory}
+    "OneTourPreproc": OneTourPreprocStrategizerFactory,
+    "TwoTourPreproc": TwoTourPreprocStrategizerFactory,
+    "FourTourPreproc": FourTourPreprocStrategizerFactory}
 
 if __name__ == '__main__':
     import argparse
@@ -287,7 +292,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--filename', help='json file to store strategies to', type=str, default=None)
     parser.add_argument('-m', '--method', help='descent method for the pruner {gradient,nm,hybrid}',
                         type=str, default="hybrid")
-    parser.add_argument('-S', '--strategizer', help='Strategizer : {ProgressivePreproc,OneTourPreproc}',
+    parser.add_argument('-S', '--strategizer', help='Strategizer : {ProgressivePreproc,OneTourPreproc,TwoTourPreproc,FourTourPreproc}',
                         type=str, default="OneTourPreproc")
 
     args = parser.parse_args()

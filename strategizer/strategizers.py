@@ -143,7 +143,7 @@ class TwoTourPreprocStrategizerTemplate(EmptyStrategizer):
         """
         Preprocess with two tours of self.preprocessing_block_size
         """
-        return [self.preprocessing_block_size, self.preprocessing_block_size]
+        return 2*[self.preprocessing_block_size]
 
 
 def TwoTourPreprocStrategizerFactory(block_size):
@@ -153,6 +153,30 @@ def TwoTourPreprocStrategizerFactory(block_size):
     name = "TwoPreprocStrategy-%d"%(block_size)
     return type("TwoTourPreprocStrategizer",
                 (TwoTourPreprocStrategizerTemplate,),
+                {"name": name, "preprocessing_block_size": block_size,
+                 "min_block_size": block_size+1})
+
+
+class FourTourPreprocStrategizerTemplate(EmptyStrategizer):
+    """
+    """
+
+    name = "FourPreprocStrategy-block_size"
+
+    def preproc(self, inp):
+        """
+        Preprocess with four tours of self.preprocessing_block_size
+        """
+        return 4*[self.preprocessing_block_size]
+
+
+def FourTourPreprocStrategizerFactory(block_size):
+    """
+    Create ``FourTourPreprocStrategizer`` for for ``block_size``
+    """
+    name = "FourPreprocStrategy-%d"%(block_size)
+    return type("FourTourPreprocStrategizer",
+                (FourTourPreprocStrategizerTemplate,),
                 {"name": name, "preprocessing_block_size": block_size,
                  "min_block_size": block_size+1})
 
