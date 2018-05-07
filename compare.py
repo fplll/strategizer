@@ -6,7 +6,7 @@ Compare strategies
 
 from __future__ import absolute_import
 from collections import OrderedDict
-from fpylll import BKZ, IntegerMatrix
+from fpylll import BKZ, IntegerMatrix, FPLLL
 from fpylll.fplll.bkz_param import Strategy, dump_strategies_json
 from fpylll.algorithms.bkz_stats import BKZTreeTracer
 from multiprocessing import Queue, Process
@@ -19,7 +19,7 @@ import time
 logger = logging.getLogger(__name__)
 
 
-def svp_time(A, params, return_queue=None):
+def svp_time(seed, params, return_queue=None):
     """Run SVP reduction of AutoBKZ on ``A`` using ``params``.
 
     :param A: a matrix
@@ -27,6 +27,10 @@ def svp_time(A, params, return_queue=None):
     :param queue: if not ``None``, the result is put on this queue.
 
     """
+    FPLLL.set_random_seed(seed)
+    A = IntegerMatrix.random(params.block_size, "qary", bits=30,
+                             k=params.block_size//2, int_type="long")
+
     # HACK to count LLL time
     t = time.time()
     bkz = CallbackBKZ(A)
@@ -92,11 +96,12 @@ def compare_strategies(strategies_list, nthreads=1, nsamples=50,
             for chunk in chunk_iterator(range(nsamples), nthreads):
                 processes = []
                 for i in chunk:
+                    seed = 2**16 * block_size + i
                     A = IntegerMatrix.random(block_size, "qary", bits=30, k=block_size//2, int_type="long")
                     param = Param(block_size=block_size,
                                   strategies=strategies,
                                   flags=BKZ.VERBOSE)
-                    process = Process(target=svp_time, args=(A, param, return_queue))
+                    process = Process(target=svp_time, args=(seed, param, return_queue))
                     processes.append(process)
                     process.start()
 
