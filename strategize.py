@@ -14,7 +14,7 @@ from __future__ import absolute_import
 from multiprocessing import Queue, Pipe, Process, active_children
 
 from fpylll import BKZ, IntegerMatrix, GSO, FPLLL
-from fpylll.algorithms.bkz_stats import BKZTreeTracer
+from fpylll.tools.bkz_stats import BKZTreeTracer
 from fpylll.fplll.bkz_param import Strategy, dump_strategies_json
 
 from strategizer.bkz import CallbackBKZ

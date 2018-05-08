@@ -8,7 +8,7 @@ from __future__ import absolute_import
 from collections import OrderedDict
 from fpylll import BKZ, IntegerMatrix, FPLLL
 from fpylll.fplll.bkz_param import Strategy, dump_strategies_json
-from fpylll.algorithms.bkz_stats import BKZTreeTracer
+from fpylll.tools.bkz_stats import BKZTreeTracer
 from multiprocessing import Queue, Process
 from strategizer.bkz import CallbackBKZ
 from strategizer.bkz import CallbackBKZParam as Param
