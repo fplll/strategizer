@@ -253,7 +253,7 @@ class PruningStrategizer(EmptyStrategizer):
                 pruning.append(pruning_)
             except RuntimeError, msg:
                 # HACK: this really shouldn't happen
-                print block_size, radius, msg
+                print(block_size, radius, msg)
         return tuple(pruning)
 
 
