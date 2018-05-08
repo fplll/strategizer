@@ -251,9 +251,9 @@ class PruningStrategizer(EmptyStrategizer):
             try:
                 pruning_ = Pruning.run(radius, overhead,  R, min(1.05*probability, 0.999))
                 pruning.append(pruning_)
-            except RuntimeError, msg:
+            except RuntimeError as exception:
                 # HACK: this really shouldn't happen
-                print(block_size, radius, msg)
+                print(block_size, radius, exception)
         return tuple(pruning)
 
 

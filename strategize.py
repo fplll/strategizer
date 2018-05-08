@@ -65,6 +65,7 @@ def worker_process(seed, params, queue):
 
     with tracer.context(("tour", 0)):
         bkz.svp_reduction(0, params.block_size, params, tracer)
+        M.update_gso()
 
     tracer.exit()
     # close connection

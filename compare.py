@@ -37,8 +37,9 @@ def svp_time(seed, params, return_queue=None):
     t = time.time() - t
     tracer = BKZTreeTracer(bkz, start_clocks=True)
 
-    with tracer.context("tour"):
+    with tracer.context(("tour", 0)):
         bkz.svp_reduction(0, params.block_size, params, tracer)
+        bkz.M.update_gso()
 
     tracer.exit()
 
