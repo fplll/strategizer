@@ -6,12 +6,11 @@ Compare strategies
 
 from __future__ import absolute_import
 from collections import OrderedDict
-from fpylll import BKZ, IntegerMatrix, FPLLL
+from fpylll import BKZ, IntegerMatrix, GSO, FPLLL
 from fpylll.fplll.bkz_param import Strategy, dump_strategies_json
 from fpylll.tools.bkz_stats import BKZTreeTracer
 from multiprocessing import Queue, Process
-from strategizer.bkz import CallbackBKZ
-from strategizer.bkz import CallbackBKZParam as Param
+from fpylll.algorithms.bkz2 import BKZReduction as BKZ2
 from strategizer.config import logging
 from strategizer.util import chunk_iterator
 import time
@@ -31,10 +30,8 @@ def svp_time(seed, params, return_queue=None):
     A = IntegerMatrix.random(params.block_size, "qary", bits=30,
                              k=params.block_size//2, int_type="long")
 
-    # HACK to count LLL time
-    t = time.time()
-    bkz = CallbackBKZ(A)
-    t = time.time() - t
+    M = GSO.Mat(A)
+    bkz = BKZ2(M)
     tracer = BKZTreeTracer(bkz, start_clocks=True)
 
     with tracer.context(("tour", 0)):
@@ -98,16 +95,20 @@ def compare_strategies(strategies_list, nthreads=1, nsamples=50,
                 processes = []
                 for i in chunk:
                     seed = 2**16 * block_size + i
-                    param = Param(block_size=block_size,
-                                  strategies=strategies,
-                                  flags=BKZ.VERBOSE)
-                    process = Process(target=svp_time, args=(seed, param, return_queue))
-                    processes.append(process)
-                    process.start()
+                    param = BKZ.Param(block_size=block_size,
+                                      strategies=list(strategies),
+                                      flags=BKZ.VERBOSE)
+                    if nthreads > 1:
+                        process = Process(target=svp_time, args=(seed, param, return_queue))
+                        processes.append(process)
+                        process.start()
+                    else:
+                        stats.append(svp_time(seed, param, None))
 
-                for process in processes:
-                    process.join()
-                    stats.append(return_queue.get())
+                if nthreads > 1:
+                    for process in processes:
+                        process.join()
+                        stats.append(return_queue.get())
 
             total_time = sum([float(stat.data["cputime"]) for stat in stats])/nsamples
             length    = sum([stat.data["|A_0|"] for stat in stats])/nsamples
