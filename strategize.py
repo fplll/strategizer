@@ -47,7 +47,7 @@ def find_best(state, fudge=1.01):
     return best
 
 
-def worker_process(seed, params, queue):
+def worker_process(seed, params, queue=None):
     """
     This function is called to collect statistics.
 
@@ -68,10 +68,15 @@ def worker_process(seed, params, queue):
         M.update_gso()
 
     tracer.exit()
-    # close connection
-    params.strategies[params.block_size].connection.send(None)
-    queue.put(tracer.trace)
-
+    try:
+        # close connection
+        params.strategies[params.block_size].connection.send(None)
+    except AttributeError:
+        pass
+    if queue:
+        queue.put(tracer.trace)
+    else:
+        return tracer.trace
 
 def callback_roundtrip(alive, k, connections, data):
     """
@@ -99,7 +104,6 @@ def callback_roundtrip(alive, k, connections, data):
 
 
 def discover_strategy(block_size, Strategizer, strategies,
-                      pruner_method="hybrid",
                       nthreads=1, nsamples=50):
     """Discover a strategy using ``Strategizer``
 
@@ -116,7 +120,7 @@ def discover_strategy(block_size, Strategizer, strategies,
     k = nthreads
     m = nsamples
 
-    strategizer = Strategizer(block_size, pruner_method=pruner_method)
+    strategizer = Strategizer(block_size)
 
     # everybody is alive in the beginning
     alive = range(m)
@@ -130,8 +134,7 @@ def discover_strategy(block_size, Strategizer, strategies,
         strategies_.append(Strategizer.Strategy(block_size, worker))
 
         # note: success probability, rerandomisation density etc. can be adapted here
-        param = Param(block_size=block_size, strategies=strategies_, flags=BKZ.VERBOSE)
-
+        param = Param(block_size=block_size, strategies=strategies_)
         process = Process(target=worker_process, args=(2**16 * block_size + i, param, return_queue))
         processes.append(process)
 
@@ -231,7 +234,6 @@ def strategize(max_block_size,
                                                          strategies,
                                                          nthreads=nthreads,
                                                          nsamples=nsamples,
-                                                         pruner_method=pruner_method,
                                                          )
 
             stats = [stat for stat in stats if stat is not None]
@@ -239,11 +241,6 @@ def strategize(max_block_size,
             total_time = [float(stat.data["cputime"]) for stat in stats]
             svp_time = [float(stat.find("enumeration").data["cputime"]) for stat in stats]
             preproc_time = [float(stat.find("preprocessing").data["cputime"]) for stat in stats]
-
-            if len(stats) >= 16:
-                total_time = sorted(total_time)[4:-4]
-                svp_time = sorted(svp_time)[4:-4]
-                preproc_time = sorted(preproc_time)[4:-4]
 
             total_time = sum(total_time)/len(total_time)
             svp_time = sum(svp_time)/len(svp_time)
@@ -266,7 +263,7 @@ def strategize(max_block_size,
         times.append((total_time, stats, queries))
 
         logger.info("")
-        logger.info("%10.6fs, %s", total_time, strategy)
+        logger.info("block size: %3d, time: %10.6fs, strategy: %s", block_size, total_time, strategy)
         logger.info("")
 
         if total_time > 0.1 and nsamples > 2*nthreads:
@@ -316,6 +313,5 @@ if __name__ == '__main__':
     strategize(nthreads=args.threads, nsamples=args.samples,
                min_block_size=args.min_block_size,
                max_block_size=args.max_block_size,
-               pruner_method=args.method,
                StrategizerFactory=StrategizerFactoryDictionnary[args.strategizer],
                dump_filename=args.filename)

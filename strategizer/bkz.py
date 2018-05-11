@@ -12,6 +12,7 @@ These variants call back to some coordinating process to gather pruning and prep
 
 from __future__ import absolute_import
 from fpylll.fplll.bkz_param import BKZParam
+from fpylll.fplll.bkz import BKZ
 from fpylll.algorithms.bkz2 import BKZReduction as BKZ2
 from fpylll.numpy import dump_r
 from .volumes import gaussian_heuristic
@@ -90,6 +91,8 @@ class CallbackStrategy(object):
         for pruning in self._pruning_parameters:
             if abs(pruning.gh_factor - gh_factor) < closest_dist:
                 best = pruning
+                closest_dist = abs(pruning.gh_factor - gh_factor)
+        assert(best is not None)
         return best
 
     def __getattr__(self, name):
@@ -121,9 +124,14 @@ class CallbackBKZ(BKZ2):
         """
         strategy = param.strategies[block_size]
 
-        radius = self.M.get_r(kappa, kappa)
-        r = dump_r(self.M, kappa, block_size)
+        radius = self.M.get_r(kappa, kappa) * self.lll_obj.delta
+        r = [self.M.get_r(i, i) for i in range(kappa, kappa+block_size)]
+        gh_radius = gaussian_heuristic(r)
+        if (param.flags & BKZ.GH_BND and block_size > 30):
+            radius = min(radius, gh_radius * param.gh_factor)
+
         try:
-            return radius, strategy.get_pruning(tuple(r), radius, stats, param.min_success_probability)
-        except TypeError:
-            return BKZ2.get_pruning(self, kappa, block_size, param, stats)
+            ret = radius, strategy.get_pruning(tuple(r), radius, stats, param.min_success_probability)
+        except TypeError as msg:
+            ret = BKZ2.get_pruning(self, kappa, block_size, param, stats)
+        return ret
