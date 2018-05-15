@@ -9,7 +9,7 @@ from collections import OrderedDict
 from fpylll import BKZ, IntegerMatrix, GSO, FPLLL
 from fpylll.fplll.bkz_param import Strategy, dump_strategies_json
 from fpylll.tools.bkz_stats import BKZTreeTracer
-from multiprocessing import Queue, Process
+from multiprocessing import Queue, Process, active_children
 from fpylll.algorithms.bkz2 import BKZReduction as BKZ2
 from strategizer.config import logging
 from strategizer.util import chunk_iterator
@@ -104,6 +104,8 @@ def compare_strategies(strategies_list, nthreads=1, nsamples=50,
                         process.start()
                     else:
                         stats.append(svp_time(seed, param, None))
+
+                active_children()
 
                 if nthreads > 1:
                     for process in processes:
