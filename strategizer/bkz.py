@@ -14,7 +14,6 @@ from __future__ import absolute_import
 from fpylll.fplll.bkz_param import BKZParam
 from fpylll.fplll.bkz import BKZ
 from fpylll.algorithms.bkz2 import BKZReduction as BKZ2
-from fpylll.numpy import dump_r
 from .volumes import gaussian_heuristic
 
 
@@ -132,6 +131,6 @@ class CallbackBKZ(BKZ2):
 
         try:
             ret = radius, strategy.get_pruning(tuple(r), radius, stats, param.min_success_probability)
-        except TypeError as msg:
+        except TypeError:
             ret = BKZ2.get_pruning(self, kappa, block_size, param, stats)
         return ret

@@ -13,7 +13,6 @@ from multiprocessing import Queue, Process, active_children
 from fpylll.algorithms.bkz2 import BKZReduction as BKZ2
 from strategizer.config import logging
 from strategizer.util import chunk_iterator
-import time
 
 logger = logging.getLogger(__name__)
 
