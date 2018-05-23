@@ -96,7 +96,7 @@ def compare_strategies(strategies_list, nthreads=1, nsamples=50,
                     seed = 2**16 * block_size + i
                     param = BKZ.Param(block_size=block_size,
                                       strategies=list(strategies),
-                                      flags=BKZ.VERBOSE)
+                                      flags=BKZ.VERBOSE|BKZ.GH_BND)
                     if nthreads > 1:
                         process = Process(target=svp_time, args=(seed, param, return_queue))
                         processes.append(process)

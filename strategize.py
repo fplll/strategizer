@@ -135,7 +135,7 @@ def discover_strategy(block_size, Strategizer, strategies,
         strategies_.append(Strategizer.Strategy(block_size, worker))
 
         # note: success probability, rerandomisation density etc. can be adapted here
-        param = Param(block_size=block_size, strategies=strategies_)
+        param = Param(block_size=block_size, strategies=strategies_, flags=BKZ.GH_BND)
         process = Process(target=worker_process, args=(2**16 * block_size + i, param, return_queue))
         processes.append(process)
 
