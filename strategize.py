@@ -13,7 +13,7 @@ Find BKZ reduction strategies using timing experiments.
 from __future__ import absolute_import
 from multiprocessing import Queue, Pipe, Process, active_children
 
-from fpylll import IntegerMatrix, GSO, FPLLL
+from fpylll import IntegerMatrix, GSO, FPLLL, BKZ
 from fpylll.tools.bkz_stats import BKZTreeTracer
 from fpylll.fplll.bkz_param import Strategy, dump_strategies_json
 
