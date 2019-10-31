@@ -268,7 +268,7 @@ def strategize(max_block_size,
         logger.info("")
 
         if total_time > 0.1 and nsamples > 2*nthreads:
-            nsamples /= 2
+            nsamples //= 2
 
     return strategies, times
 

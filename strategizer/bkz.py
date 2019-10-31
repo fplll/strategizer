@@ -130,7 +130,7 @@ class CallbackBKZ(BKZ2):
             radius = min(radius, gh_radius * param.gh_factor)
 
         try:
-            ret = radius, strategy.get_pruning(tuple(r), radius, stats, param.min_success_probability)
+            ret = radius, 0, strategy.get_pruning(tuple(r), radius, stats, param.min_success_probability)
         except TypeError:
             ret = BKZ2.get_pruning(self, kappa, block_size, param, stats)
         return ret
