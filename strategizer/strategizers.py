@@ -249,7 +249,7 @@ class PruningStrategizer(EmptyStrategizer):
         for i in range(-PruningStrategizer.GH_FACTORS_STEPS, PruningStrategizer.GH_FACTORS_STEPS+1):
             radius = gh_margin(block_size) ** (1. * i / PruningStrategizer.GH_FACTORS_STEPS)
             try:
-                pruning_ = Pruning.run(radius, overhead,  R, min(1.05*probability, 0.999))
+                pruning_ = Pruning.run(radius, overhead,  R, min(1.05*probability, 0.999), flags=Pruning.HALF|Pruning.GRADIENT)
                 pruning.append(pruning_)
             except RuntimeError as exception:
                 # HACK: this really shouldn't happen
