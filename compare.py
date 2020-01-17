@@ -151,7 +151,7 @@ if __name__ == '__main__':
 
     strategiess = []
     for strategies in args.strategies:
-        strategiess.append(load_strategies_json(strategies))
+        strategiess.append(load_strategies_json(strategies.encode("ascii")))
 
     results = compare_strategies(strategiess, nthreads=args.threads, nsamples=args.samples,
                                  min_block_size=args.min_block_size, max_block_size=args.max_block_size)
