@@ -57,7 +57,7 @@ def worker_process(seed, params, queue=None):
 
     """
     FPLLL.set_random_seed(seed)
-    A = IntegerMatrix.random(params.block_size, "qary", bits=30, k=params.block_size//2, int_type="long")
+    A = IntegerMatrix.random(params.block_size, "qary", q=33554393, k=params.block_size//2, int_type="long")
 
     M = GSO.Mat(A)
     bkz = CallbackBKZ(M)  # suppresses initial LLL call
