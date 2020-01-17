@@ -17,7 +17,7 @@ cmds = [("git", "show", "-s", "--format=%cd", "HEAD", "--date=short"),
 
 for cmd in cmds:
     try:
-        r = str(subprocess.check_output(cmd).rstrip())
+        r = str(subprocess.check_output(cmd).rstrip().decode("ascii"))
         git_revision.append(r)
     except ValueError:
         pass
