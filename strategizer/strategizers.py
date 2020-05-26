@@ -42,7 +42,7 @@ class EmptyStrategizer(object):
                     data.append(q[1:])
                 else:
                     if what != q[0]:
-                        raise ValueError("Cannot handle inconsistent queries '%s' != '%s'"%(what, q[0]))
+                        raise ValueError("Cannot handle inconsistent queries '%s' != '%s'" % (what, q[0]))
             else:
                 data.append(None)
 
@@ -61,9 +61,9 @@ class EmptyStrategizer(object):
         if what == "pruning":
             return self.pruning(data)
         if what is None:
-            return [None]*len(data)
+            return [None] * len(data)
         else:
-            raise ValueError("Query for '%s' not supported."%what)
+            raise ValueError("Query for '%s' not supported." % what)
 
     def preproc(self, data):
         """No preprocessing.
@@ -79,7 +79,7 @@ class EmptyStrategizer(object):
         :param data: tuple of (state, r_ii, radius, preprocessing time)
 
         """
-        return ((1., [1.0]*self.block_size, 1.),)
+        return ((1.0, [1.0] * self.block_size, 1.0),)
 
 
 class SimplePreprocStrategizerTemplate(EmptyStrategizer):
@@ -92,18 +92,19 @@ class SimplePreprocStrategizerTemplate(EmptyStrategizer):
         """
         Preprocess with one tour of 8,16,24,…,block_size-20-1
         """
-        return range(self.start, self.block_size-self.stop, self.step_size)
+        return range(self.start, self.block_size - self.stop, self.step_size)
 
 
 def SimplePreprocStrategizerFactory(start, stop, step_size):
     """
     Create ``SimplePreprocStrategizer`` for blocks in ``range(start, block_size-stop, step_size)``
     """
-    name = "SimplePreprocStrategy-(%d, %d, %d)"%(start, stop, step_size)
-    return type("SimplePreprocStrategizer",
-                (SimplePreprocStrategizerTemplate,),
-                {"name": name, "start": start, "stop": stop, "step_size": step_size,
-                 "min_block_size": start+stop+1})
+    name = "SimplePreprocStrategy-(%d, %d, %d)" % (start, stop, step_size)
+    return type(
+        "SimplePreprocStrategizer",
+        (SimplePreprocStrategizerTemplate,),
+        {"name": name, "start": start, "stop": stop, "step_size": step_size, "min_block_size": start + stop + 1},
+    )
 
 
 SimplePreprocStrategizer16248 = SimplePreprocStrategizerFactory(16, 24, 8)
@@ -126,11 +127,12 @@ def OneTourPreprocStrategizerFactory(block_size):
     """
     Create ``OneTourPreprocStrategizer`` for for ``block_size``
     """
-    name = "OnePreprocStrategy-%d"%(block_size)
-    return type("OneTourPreprocStrategizer",
-                (OneTourPreprocStrategizerTemplate,),
-                {"name": name, "preprocessing_block_size": block_size,
-                 "min_block_size": block_size+1})
+    name = "OnePreprocStrategy-%d" % (block_size)
+    return type(
+        "OneTourPreprocStrategizer",
+        (OneTourPreprocStrategizerTemplate,),
+        {"name": name, "preprocessing_block_size": block_size, "min_block_size": block_size + 1},
+    )
 
 
 class TwoTourPreprocStrategizerTemplate(EmptyStrategizer):
@@ -143,18 +145,19 @@ class TwoTourPreprocStrategizerTemplate(EmptyStrategizer):
         """
         Preprocess with two tours of self.preprocessing_block_size
         """
-        return 2*[self.preprocessing_block_size]
+        return 2 * [self.preprocessing_block_size]
 
 
 def TwoTourPreprocStrategizerFactory(block_size):
     """
     Create ``TwoTourPreprocStrategizer`` for for ``block_size``
     """
-    name = "TwoPreprocStrategy-%d"%(block_size)
-    return type("TwoTourPreprocStrategizer",
-                (TwoTourPreprocStrategizerTemplate,),
-                {"name": name, "preprocessing_block_size": block_size,
-                 "min_block_size": block_size+1})
+    name = "TwoPreprocStrategy-%d" % (block_size)
+    return type(
+        "TwoTourPreprocStrategizer",
+        (TwoTourPreprocStrategizerTemplate,),
+        {"name": name, "preprocessing_block_size": block_size, "min_block_size": block_size + 1},
+    )
 
 
 class FourTourPreprocStrategizerTemplate(EmptyStrategizer):
@@ -167,18 +170,19 @@ class FourTourPreprocStrategizerTemplate(EmptyStrategizer):
         """
         Preprocess with four tours of self.preprocessing_block_size
         """
-        return 4*[self.preprocessing_block_size]
+        return 4 * [self.preprocessing_block_size]
 
 
 def FourTourPreprocStrategizerFactory(block_size):
     """
     Create ``FourTourPreprocStrategizer`` for for ``block_size``
     """
-    name = "FourPreprocStrategy-%d"%(block_size)
-    return type("FourTourPreprocStrategizer",
-                (FourTourPreprocStrategizerTemplate,),
-                {"name": name, "preprocessing_block_size": block_size,
-                 "min_block_size": block_size+1})
+    name = "FourPreprocStrategy-%d" % (block_size)
+    return type(
+        "FourTourPreprocStrategizer",
+        (FourTourPreprocStrategizerTemplate,),
+        {"name": name, "preprocessing_block_size": block_size, "min_block_size": block_size + 1},
+    )
 
 
 PROGRESSIVE_STEP = 10
@@ -210,11 +214,12 @@ def ProgressivePreprocStrategizerFactory(block_size):
     """
     Create ``ProgressivePreprocStrategizer`` for for ``block_size``
     """
-    name = "ProgressivePreprocStrategy-%d"%(block_size)
-    return type("ProgressivePreprocStrategizer",
-                (ProgressivePreprocStrategizerTemplate,),
-                {"name": name, "preprocessing_block_size": block_size,
-                 "min_block_size": block_size+1})
+    name = "ProgressivePreprocStrategy-%d" % (block_size)
+    return type(
+        "ProgressivePreprocStrategizer",
+        (ProgressivePreprocStrategizerTemplate,),
+        {"name": name, "preprocessing_block_size": block_size, "min_block_size": block_size + 1},
+    )
 
 
 class PruningStrategizer(EmptyStrategizer):
@@ -224,7 +229,7 @@ class PruningStrategizer(EmptyStrategizer):
 
     name = "PruningStrategy"
     Strategy = CallbackStrategy
-    GH_FACTORS_STEPS=10
+    GH_FACTORS_STEPS = 10
 
     def pruning(self, query):
         block_size = self.block_size
@@ -238,18 +243,20 @@ class PruningStrategizer(EmptyStrategizer):
                 continue
             rs, r, preproc_t, probability_ = data
             gh_radius = gaussian_heuristic(rs)
-            R.append([x/gh_radius for x in rs])
+            R.append([x / gh_radius for x in rs])
             preproc_time.append(preproc_t)
             probability.append(probability_)
 
         preproc_time = sum(preproc_time)/len(preproc_time)
         overhead = nodes_per_sec(block_size) * preproc_time
-        probability = sum(probability)/len(probability)
+        probability = sum(probability) / len(probability)
 
-        for i in range(-PruningStrategizer.GH_FACTORS_STEPS, PruningStrategizer.GH_FACTORS_STEPS+1):
-            radius = gh_margin(block_size) ** (1. * i / PruningStrategizer.GH_FACTORS_STEPS)
+        for i in range(-PruningStrategizer.GH_FACTORS_STEPS, PruningStrategizer.GH_FACTORS_STEPS + 1):
+            radius = gh_margin(block_size) ** (1.0 * i / PruningStrategizer.GH_FACTORS_STEPS)
             try:
-                pruning_ = Pruning.run(radius, overhead,  R, min(1.05*probability, 0.999), flags=Pruning.HALF|Pruning.GRADIENT)
+                pruning_ = Pruning.run(
+                    radius, overhead, R, min(1.05 * probability, 0.999), flags=Pruning.HALF | Pruning.GRADIENT
+                )
                 pruning.append(pruning_)
             except RuntimeError as exception:
                 # HACK: this really shouldn't happen
@@ -262,6 +269,7 @@ class CopyStrategizer(EmptyStrategizer):
     Strategize as suggested by strategy.
 
     """
+
     name = "CopyStrategy"
 
     def preproc(self, query):
@@ -285,5 +293,4 @@ def CopyStrategizerFactory(strategies, name="CopyStrategizer"):
     """
     Create CopyStrategizer from strategy list.
     """
-    return type("CopyStrategizer", (CopyStrategizer,),
-                {"strategies": strategies, "name": name})
+    return type("CopyStrategizer", (CopyStrategizer,), {"strategies": strategies, "name": name})
