@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 u"""
 Find BKZ reduction strategies using timing experiments.
@@ -21,11 +22,14 @@ from strategizer.bkz import CallbackBKZ
 from strategizer.bkz import CallbackBKZParam as Param
 from strategizer.config import logging, git_revision
 from strategizer.util import chunk_iterator
-from strategizer.strategizers import PruningStrategizer,\
-    OneTourPreprocStrategizerFactory, \
-    TwoTourPreprocStrategizerFactory, \
-    FourTourPreprocStrategizerFactory, \
-    ProgressivePreprocStrategizerFactory
+from strategizer.strategizers import (
+    PruningStrategizer,
+    OneTourPreprocStrategizerFactory,
+    TwoTourPreprocStrategizerFactory,
+    FourTourPreprocStrategizerFactory,
+    ProgressivePreprocStrategizerFactory,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -42,7 +46,7 @@ def find_best(state, fudge=1.01):
     """
     best = state[0]
     for s in state:
-        if best[0] > fudge*s[0]:
+        if best[0] > fudge * s[0]:
             best = s
     return best
 
@@ -57,7 +61,7 @@ def worker_process(seed, params, queue=None):
 
     """
     FPLLL.set_random_seed(seed)
-    A = IntegerMatrix.random(params.block_size, "qary", q=33554393, k=params.block_size//2, int_type="long")
+    A = IntegerMatrix.random(params.block_size, "qary", q=33554393, k=params.block_size // 2, int_type="long")
 
     M = GSO.Mat(A)
     bkz = CallbackBKZ(M)  # suppresses initial LLL call
@@ -88,7 +92,7 @@ def callback_roundtrip(alive, k, connections, data):
     :param connections:
     :param data:
     """
-    callback = [None]*len(connections)
+    callback = [None] * len(connections)
 
     for chunk in chunk_iterator(alive, k):
         for i in chunk:
@@ -136,10 +140,10 @@ def discover_strategy(block_size, Strategizer, strategies,
 
         # note: success probability, rerandomisation density etc. can be adapted here
         param = Param(block_size=block_size, strategies=strategies_, flags=BKZ.GH_BND)
-        process = Process(target=worker_process, args=(2**16 * block_size + i, param, return_queue))
+        process = Process(target=worker_process, args=(2 ** 16 * block_size + i, param, return_queue))
         processes.append(process)
 
-    callback = [None]*m
+    callback = [None] * m
     for chunk in chunk_iterator(alive, k):
         for i in chunk:
             process = processes[i]
@@ -164,9 +168,9 @@ def discover_strategy(block_size, Strategizer, strategies,
     callback = callback_roundtrip(alive, k, connections, pruning_params)
     assert not any(callback)  # no more questions
 
-    strategy = Strategy(block_size=block_size,
-                        preprocessing_block_sizes=preproc_params,
-                        pruning_parameters=pruning_params)
+    strategy = Strategy(
+        block_size=block_size, preprocessing_block_sizes=preproc_params, pruning_parameters=pruning_params
+    )
 
     active_children()
 
@@ -197,7 +201,7 @@ def strategize(max_block_size,
 
     """
     if dump_filename is None:
-        dump_filename = "default-strategies-%s.json"%git_revision
+        dump_filename = "default-strategies-%s.json" % git_revision
 
     if existing_strategies is not None:
         strategies = existing_strategies
@@ -267,7 +271,7 @@ def strategize(max_block_size,
         logger.info("block size: %3d, time: %10.6fs, strategy: %s", block_size, total_time, strategy)
         logger.info("")
 
-        if total_time > 0.1 and nsamples > max(2*nthreads, 8):
+        if total_time > 0.1 and nsamples > max(2 * jobs, 8):
             nsamples //= 2
 
     return strategies, times
@@ -277,9 +281,10 @@ StrategizerFactoryDictionnary = {
     "ProgressivePreproc": ProgressivePreprocStrategizerFactory,
     "OneTourPreproc": OneTourPreprocStrategizerFactory,
     "TwoTourPreproc": TwoTourPreprocStrategizerFactory,
-    "FourTourPreproc": FourTourPreprocStrategizerFactory}
+    "FourTourPreproc": FourTourPreprocStrategizerFactory,
+}
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
     import logging
     import os
@@ -296,7 +301,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    log_name = os.path.join("default-strategies-%s.log"%(git_revision))
+    log_name = os.path.join("default-strategies-%s.log" % (git_revision))
 
     if args.filename:
         if not args.filename.endswith(".json"):
@@ -305,7 +310,7 @@ if __name__ == '__main__':
 
     extra = logging.FileHandler(log_name)
     extra.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(name)s: %(message)s',)
+    formatter = logging.Formatter("%(name)s: %(message)s")
     extra.setFormatter(formatter)
     logging.getLogger('').addHandler(extra)
 
