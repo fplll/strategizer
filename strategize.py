@@ -271,7 +271,7 @@ def strategize(max_block_size,
         logger.info("block size: %3d, time: %10.6fs, strategy: %s", block_size, total_time, strategy)
         logger.info("")
 
-        if total_time > 0.1 and nsamples > max(2 * jobs, 8):
+        if total_time > 0.1 and nsamples > max(2 * nthreads, 8):
             nsamples //= 2
 
     return strategies, times
