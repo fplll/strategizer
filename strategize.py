@@ -245,16 +245,25 @@ def strategize(
 
             stats = [stat for stat in stats if stat is not None]
 
-            total_time = [float(stat.data["walltime"]) for stat in stats]
-            svp_time = [float(stat.find("enumeration").data["walltime"]) for stat in stats]
-            preproc_time = [float(stat.find("preprocessing").data["walltime"]) for stat in stats]
+            total_time = [float(stat.data["cputime"]) for stat in stats]
+            total_walltime = [float(stat.data["walltime"]) for stat in stats]
+            svp_time = [float(stat.find("enumeration").data["cputime"]) for stat in stats]
+            preproc_time = [float(stat.find("preprocessing").data["cputime"]) for stat in stats]
 
             total_time = sum(total_time) / len(total_time)
+            total_walltime = sum(total_walltime) / len(total_walltime)
             svp_time = sum(svp_time) / len(svp_time)
             preproc_time = sum(preproc_time) / len(preproc_time)
 
-            state.append((total_time, strategy, stats, strategizer, queries))
-            logger.info("%10.6fs, %10.6fs, %10.6fs, %s", total_time, preproc_time, svp_time, strategy)
+            state.append((total_time, total_walltime, strategy, stats, strategizer, queries))
+            logger.info(
+                "t: %10.4fs, w: %10.4fs, p: %10.4fs, s: %10.4fs, %s",
+                total_time,
+                total_walltime,
+                preproc_time,
+                svp_time,
+                strategy,
+            )
 
             if prev_best_total_time and 1.3 * prev_best_total_time < total_time:
                 break
@@ -263,17 +272,23 @@ def strategize(
                 prev_best_total_time = total_time
 
         best = find_best(state)
-        total_time, strategy, stats, strategizer, queries = best
+        total_time, total_walltime, strategy, stats, strategizer, queries = best
 
         strategies.append(strategy)
         dump_strategies_json(dump_filename, strategies)
         times.append((total_time, stats, queries))
 
         logger.info("")
-        logger.info("block size: %3d, time: %10.6fs, strategy: %s", block_size, total_time, strategy)
+        logger.info(
+            "block size: %3d, cpu: %10.4fs, wall: %10.4fs, strategy: %s",
+            block_size,
+            total_time,
+            total_walltime,
+            strategy,
+        )
         logger.info("")
 
-        if total_time > 0.1 and nsamples > max(2 * nthreads, 8):
+        if total_time > 0.1 and nsamples > max(2 * jobs, 8):
             nsamples //= 2
 
     return strategies, times
