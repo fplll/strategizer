@@ -6,7 +6,7 @@ Strategizers are used to find strategies for BKZ reduction.
 from .bkz import CallbackStrategy
 from .mdc import nodes_per_sec
 from .volumes import gaussian_heuristic, gh_margin
-from fpylll import Pruning
+from fpylll import FPLLL, Pruning
 
 
 class EmptyStrategizer(object):
@@ -247,7 +247,8 @@ class PruningStrategizer(EmptyStrategizer):
             preproc_time.append(preproc_t)
             probability.append(probability_)
 
-        preproc_time = sum(preproc_time)/len(preproc_time)
+        threads = FPLLL.get_threads()
+        preproc_time = sum(threads * preproc_time) / len(preproc_time)
         overhead = nodes_per_sec(block_size) * preproc_time
         probability = sum(probability) / len(probability)
 

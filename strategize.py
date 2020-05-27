@@ -108,21 +108,20 @@ def callback_roundtrip(alive, k, connections, data):
     return callback
 
 
-def discover_strategy(block_size, Strategizer, strategies,
-                      nthreads=1, nsamples=50):
+def discover_strategy(block_size, Strategizer, strategies, jobs=1, nsamples=50):
     """Discover a strategy using ``Strategizer``
 
     :param block_size: block size to try
     :param Strategizer: strategizer to use
     :param strategies: strategies for smaller block sizes
-    :param nthreads: number of threads to run
+    :param jobs: number of jobs to run in parallel
     :param nsamples: number of lattice bases to consider
     :param subprocess:
 
     """
     connections = []
     processes = []
-    k = nthreads
+    k = jobs
     m = nsamples
 
     strategizer = Strategizer(block_size)
@@ -181,13 +180,17 @@ def discover_strategy(block_size, Strategizer, strategies,
     return strategy, tuple(stats), tuple(strategizer.queries)
 
 
-def strategize(max_block_size,
-               existing_strategies=None,
-               min_block_size=3,
-               nthreads=1, nsamples=50,
-               pruner_method="hybrid",
-               StrategizerFactory=ProgressivePreprocStrategizerFactory,
-               dump_filename=None):
+def strategize(
+    max_block_size,
+    existing_strategies=None,
+    min_block_size=3,
+    jobs=1,
+    threads=1,
+    nsamples=50,
+    pruner_method="hybrid",
+    StrategizerFactory=ProgressivePreprocStrategizerFactory,
+    dump_filename=None,
+):
     """
     *one* preprocessing block size + pruning.
 
@@ -195,7 +198,8 @@ def strategize(max_block_size,
     :param strategizers: strategizers to use
     :param existing_strategies: extend these previously computed strategies
     :param min_block_size: start at this block size
-    :param nthreads: use this many threads
+    :param jobs: run this many jobs in parallel
+    :param threads: number of FPLLL threads to use per job
     :param nsamples: start using this many samples
     :param dump_filename: write strategies to this filename
 
@@ -205,7 +209,7 @@ def strategize(max_block_size,
 
     if existing_strategies is not None:
         strategies = existing_strategies
-        times = [None]*len(strategies)
+        times = [None] * len(strategies)
     else:
         strategies = []
         times = []
@@ -216,7 +220,9 @@ def strategize(max_block_size,
 
     strategizer = PruningStrategizer
 
-    for block_size in range(min_block_size, max_block_size+1):
+    FPLLL.set_threads(threads)
+
+    for block_size in range(min_block_size, max_block_size + 1):
         logger.info("= block size: %3d, samples: %3d =", block_size, nsamples)
 
         state = []
@@ -229,32 +235,28 @@ def strategize(max_block_size,
         prev_best_total_time = None
         while p < block_size:
             if p >= 4:
-                strategizer_p = type("PreprocStrategizer-%d"%p,
-                                     (strategizer, StrategizerFactory(p)), {})
+                strategizer_p = type("PreprocStrategizer-%d" % p, (strategizer, StrategizerFactory(p)), {})
             else:
                 strategizer_p = strategizer
 
-            strategy, stats, queries = discover_strategy(block_size,
-                                                         strategizer_p,
-                                                         strategies,
-                                                         nthreads=nthreads,
-                                                         nsamples=nsamples,
-                                                         )
+            strategy, stats, queries = discover_strategy(
+                block_size, strategizer_p, strategies, jobs=jobs, nsamples=nsamples
+            )
 
             stats = [stat for stat in stats if stat is not None]
 
-            total_time = [float(stat.data["cputime"]) for stat in stats]
-            svp_time = [float(stat.find("enumeration").data["cputime"]) for stat in stats]
-            preproc_time = [float(stat.find("preprocessing").data["cputime"]) for stat in stats]
+            total_time = [float(stat.data["walltime"]) for stat in stats]
+            svp_time = [float(stat.find("enumeration").data["walltime"]) for stat in stats]
+            preproc_time = [float(stat.find("preprocessing").data["walltime"]) for stat in stats]
 
-            total_time = sum(total_time)/len(total_time)
-            svp_time = sum(svp_time)/len(svp_time)
-            preproc_time = sum(preproc_time)/len(preproc_time)
+            total_time = sum(total_time) / len(total_time)
+            svp_time = sum(svp_time) / len(svp_time)
+            preproc_time = sum(preproc_time) / len(preproc_time)
 
             state.append((total_time, strategy, stats, strategizer, queries))
             logger.info("%10.6fs, %10.6fs, %10.6fs, %s", total_time, preproc_time, svp_time, strategy)
 
-            if prev_best_total_time and 1.3*prev_best_total_time < total_time:
+            if prev_best_total_time and 1.3 * prev_best_total_time < total_time:
                 break
             p += 2
             if not prev_best_total_time or prev_best_total_time > total_time:
@@ -289,15 +291,20 @@ if __name__ == "__main__":
     import logging
     import os
 
-    parser = argparse.ArgumentParser(description='Preprocessing Search')
-    parser.add_argument('-t', '--threads', help='number of threads to use', type=int, default=1)
-    parser.add_argument('-s', '--samples', help='number of samples to try', type=int, default=16)
-    parser.add_argument('-l', '--min-block-size', help='minimal block size to consider', type=int, default=3)
-    parser.add_argument('-u', '--max-block-size', help='minimal block size to consider', type=int, default=50)
-    parser.add_argument('-f', '--filename', help='json file to store strategies to', type=str, default=None)
-    parser.add_argument('-S', '--strategizer',
-                        help='Strategizer : {ProgressivePreproc,OneTourPreproc,TwoTourPreproc,FourTourPreproc}',
-                        type=str, default="OneTourPreproc")
+    parser = argparse.ArgumentParser(description="Preprocessing Search")
+    parser.add_argument("-j", "--jobs", help="number of jobs to run in parallel", type=int, default=1)
+    parser.add_argument("-t", "--threads", help="number of FPLLL threads to use per job", type=int, default=1)
+    parser.add_argument("-s", "--samples", help="number of samples to try", type=int, default=16)
+    parser.add_argument("-l", "--min-block-size", help="minimal block size to consider", type=int, default=3)
+    parser.add_argument("-u", "--max-block-size", help="minimal block size to consider", type=int, default=50)
+    parser.add_argument("-f", "--filename", help="json file to store strategies to", type=str, default=None)
+    parser.add_argument(
+        "-S",
+        "--strategizer",
+        help="Strategizer : {ProgressivePreproc,OneTourPreproc,TwoTourPreproc,FourTourPreproc}",
+        type=str,
+        default="OneTourPreproc",
+    )
 
     args = parser.parse_args()
 
@@ -312,10 +319,14 @@ if __name__ == "__main__":
     extra.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(name)s: %(message)s")
     extra.setFormatter(formatter)
-    logging.getLogger('').addHandler(extra)
+    logging.getLogger("").addHandler(extra)
 
-    strategize(nthreads=args.threads, nsamples=args.samples,
-               min_block_size=args.min_block_size,
-               max_block_size=args.max_block_size,
-               StrategizerFactory=StrategizerFactoryDictionnary[args.strategizer],
-               dump_filename=args.filename)
+    strategize(
+        jobs=args.jobs,
+        threads=args.threads,
+        nsamples=args.samples,
+        min_block_size=args.min_block_size,
+        max_block_size=args.max_block_size,
+        StrategizerFactory=StrategizerFactoryDictionnary[args.strategizer],
+        dump_filename=args.filename,
+    )
