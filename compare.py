@@ -14,6 +14,7 @@ from multiprocessing import Queue, Process, active_children
 from fpylll.algorithms.bkz2 import BKZReduction as BKZ2
 from strategizer.config import logging
 from strategizer.util import chunk_iterator
+from math import exp, log
 
 logger = logging.getLogger(__name__)
 
@@ -42,8 +43,8 @@ def svp_time(seed, params, return_queue=None):
 
     tracer.exit()
 
-    det = q**k
-    tracer.trace.data["delta"] = (A[0].norm() / det ** (1 / float(params.block_size))) ** (1 / float(params.block_size))
+    log_delta = (log(A[0].norm()) - log(q) * (k / float(params.block_size))) / float(params.block_size)
+    tracer.trace.data["delta"] = exp(log_delta)
     if return_queue:
         return_queue.put(tracer.trace)
     else:
@@ -172,7 +173,7 @@ if __name__ == "__main__":
         nsamples=args.samples,
         min_block_size=args.min_block_size,
         max_block_size=args.max_block_size,
-        threads=args.threads
+        threads=args.threads,
     )
     json_dict = OrderedDict()
 
