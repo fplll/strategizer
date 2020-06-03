@@ -61,6 +61,7 @@ def worker_process(seed, params, queue=None):
 
     """
     FPLLL.set_random_seed(seed)
+    FPLLL.set_threads(params["threads"])
     A = IntegerMatrix.random(params.block_size, "qary", q=33554393, k=params.block_size // 2, int_type="long")
 
     M = GSO.Mat(A)
@@ -108,7 +109,7 @@ def callback_roundtrip(alive, k, connections, data):
     return callback
 
 
-def discover_strategy(block_size, Strategizer, strategies, jobs=1, nsamples=50):
+def discover_strategy(block_size, Strategizer, strategies, jobs=1, nsamples=50, threads=1):
     """Discover a strategy using ``Strategizer``
 
     :param block_size: block size to try
@@ -116,7 +117,7 @@ def discover_strategy(block_size, Strategizer, strategies, jobs=1, nsamples=50):
     :param strategies: strategies for smaller block sizes
     :param jobs: number of jobs to run in parallel
     :param nsamples: number of lattice bases to consider
-    :param subprocess:
+    :param threads: number of threads to use per job
 
     """
     connections = []
@@ -139,6 +140,7 @@ def discover_strategy(block_size, Strategizer, strategies, jobs=1, nsamples=50):
 
         # note: success probability, rerandomisation density etc. can be adapted here
         param = Param(block_size=block_size, strategies=strategies_, flags=BKZ.GH_BND)
+        param["threads"] = threads
         process = Process(target=worker_process, args=(2 ** 16 * block_size + i, param, return_queue))
         processes.append(process)
 
@@ -220,8 +222,6 @@ def strategize(
 
     strategizer = PruningStrategizer
 
-    FPLLL.set_threads(threads)
-
     for block_size in range(min_block_size, max_block_size + 1):
         logger.info("= block size: %3d, samples: %3d =", block_size, nsamples)
 
@@ -240,7 +240,7 @@ def strategize(
                 strategizer_p = strategizer
 
             strategy, stats, queries = discover_strategy(
-                block_size, strategizer_p, strategies, jobs=jobs, nsamples=nsamples
+                block_size, strategizer_p, strategies, jobs=jobs, nsamples=nsamples, threads=threads,
             )
 
             stats = [stat for stat in stats if stat is not None]
