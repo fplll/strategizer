@@ -131,7 +131,7 @@ def compare_strategies(strategies_list, jobs=1, nsamples=50, min_block_size=3, m
 
         logger.info("")
         if results[block_size][0]["total time"] > 1.0 and nsamples > 2 * max(32, jobs):
-            nsamples /= 2
+            nsamples //= 2
 
     return results
 
