@@ -228,7 +228,7 @@ def strategize(
         state = []
 
         try:
-            p = max(strategies[-1].preprocessing_block_sizes[-1] - 4, 2)
+            p = max(strategies[-1].preprocessing_block_sizes[-1], 2)
         except (IndexError,):
             p = 2
 
