@@ -21,6 +21,7 @@ jobs:
              python-version: '3.x'        
       - name: Check out
         uses: actions/checkout@v2
+
       - name: Checkout submodules
         uses: textbook/git-checkout-submodule-action@master
         
@@ -35,14 +36,15 @@ jobs:
 
       - name: Dependencies
         run: |
-          cd fplll || exit
+          cd fplll
+          ls -lha
           ./autogen.sh
           ./configure --disable-static --prefix=/usr --with-max-enum-dim=64 --with-max-parallel-enum-dim=20
           make -j $JOBS
           sudo make install
           cd ..
 
-          cd fpylll || exit
+          cd fpylll
           pip install Cython
           pip install -r requirements.txt
           pip install -r suggestions.txt
