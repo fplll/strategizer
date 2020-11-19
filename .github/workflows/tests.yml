@@ -39,7 +39,6 @@ jobs:
       - name: Dependencies
         run: |
           cd fplll
-          ls -lha
           ./autogen.sh
           ./configure --disable-static --prefix=/usr --with-max-enum-dim=64 --with-max-parallel-enum-dim=20
           make -j $JOBS
