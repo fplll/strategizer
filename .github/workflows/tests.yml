@@ -1,0 +1,64 @@
+name: Tests
+
+on: 
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * 0' # weekly
+
+env:
+  JOBS: 2
+  DEPS: libgmp-dev libmpfr-dev libqd-dev libtool autoconf python3-pip python3-dev
+
+jobs:
+  python3:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+             python-version: '3.x'        
+      - name: Check out
+        uses: actions/checkout@v2
+        
+      - name: Install prerequisites
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install $DEPS
+          pip install flake8
+
+      - name: Submodules
+        run: |
+          git submodule init
+          git submodule update
+          
+      - name: Check style
+        run: flake8 --max-line-length=120 --max-complexity=16 --ignore=E22,E241 --exclude=fpylll/,fplll/ .
+
+      - name: Dependencies
+        run: |
+          cd fplll
+          ls -lha
+          ./autogen.sh
+          ./configure --disable-static --prefix=/usr --with-max-enum-dim=64 --with-max-parallel-enum-dim=20
+          make -j $JOBS
+          sudo make install
+          cd ..
+
+          cd fpylll
+          pip install Cython
+          pip install -r requirements.txt
+          pip install -r suggestions.txt
+          python setup.py build_ext -j $JOBS
+          python setup.py install
+          cd ..
+
+          # Otherwise py.test may fail
+          rm -rf ./fplll
+          rm -rf ./fpylll
+          
+      - name: Test
+        run: |
+           python ./set_mdc.py
+           python ./strategize.py -u 10 -t 1 -s 2
