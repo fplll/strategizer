@@ -1,7 +1,7 @@
 BKZ 2.0 Strategy Search
 =======================
 
-Search for BKZ 2.0 lattice-reduction strategies using `fplll <https://github.com/fplll/fplll>`_ and `fplll <https://github.com/fpylll/fpylll>`_.
+Search for BKZ 2.0 lattice-reduction strategies using `fplll <https://github.com/fplll/fplll>`_ and `fpylll <https://github.com/fplll/fpylll>`_.
 
 Getting Started
 ---------------
